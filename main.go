@@ -120,6 +120,9 @@ func main() {
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 
+	// run the controller loop to process items
+	go controller.Run(stopCh)
+
 	// use a channel to handle OS signals to terminate and gracefully shut
 	// down processing
 	sigTerm := make(chan os.Signal, 1)
