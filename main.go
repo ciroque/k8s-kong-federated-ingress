@@ -7,8 +7,9 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	api_v1 "k8s.io/api/core/v1"
+	//api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	network_v1beta1 "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -44,22 +45,21 @@ func main() {
 	client := getKubernetesClient()
 
 	// create the informer so that we can not only list resources
-	// but also watch them for all pods in the default namespace
+	// but also watch them for all Ingress resources in the default namespace
 	informer := cache.NewSharedIndexInformer(
 		// the ListWatch contains two different functions that our
 		// informer requires: ListFunc to take care of listing and watching
 		// the resources we want to handle
 		&cache.ListWatch{
 			ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
-				// list all of the pods (core resource) in the deafult namespace
-				return client.CoreV1().Pods(meta_v1.NamespaceDefault).List(options)
+				// list all of the ingresses (Ingress resource) in the default namespace
+				return client.NetworkingV1beta1().Ingresses(meta_v1.NamespaceAll).List(options)
 			},
 			WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
-				// watch all of the pods (core resource) in the default namespace
-				return client.CoreV1().Pods(meta_v1.NamespaceDefault).Watch(options)
+				return client.NetworkingV1beta1().Ingresses(meta_v1.NamespaceAll).Watch(options)
 			},
 		},
-		&api_v1.Pod{}, // the target type (Pod)
+		&network_v1beta1.Ingress{},
 		0,             // no resync (period of 0)
 		cache.Indexers{},
 	)
@@ -78,7 +78,7 @@ func main() {
 			// convert the resource object into a key (in this case
 			// we are just doing it in the format of 'namespace/name')
 			key, err := cache.MetaNamespaceKeyFunc(obj)
-			log.Infof("Add pod: %s", key)
+			log.Infof("Add Ingress: %s", key)
 			if err == nil {
 				// add the key to the queue for the handler to get
 				queue.Add(key)
@@ -86,7 +86,7 @@ func main() {
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
-			log.Infof("Update pod: %s", key)
+			log.Infof("Update Ingress: %s", key)
 			if err == nil {
 				queue.Add(key)
 			}
@@ -98,7 +98,7 @@ func main() {
 			//
 			// this then in turn calls MetaNamespaceKeyFunc
 			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
-			log.Infof("Delete pod: %s", key)
+			log.Infof("Delete Ingress: %s", key)
 			if err == nil {
 				queue.Add(key)
 			}

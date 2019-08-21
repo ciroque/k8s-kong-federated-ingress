@@ -12,9 +12,6 @@ import (
 	"k8s.io/client-go/util/workqueue"
 )
 
-// Controller struct defines how a controller should encapsulate
-// logging, client connectivity, informing (list and watching)
-// queueing, and handling of resource changes
 type Controller struct {
 	logger    *log.Entry
 	clientset kubernetes.Interface
@@ -23,27 +20,16 @@ type Controller struct {
 	handler   Handler
 }
 
-// Run is the main path of execution for the controller loop
 func (c *Controller) Run(stopCh <-chan struct{}) {
-	// handle a panic with logging and exiting
 	defer utilruntime.HandleCrash()
-	// ignore new items in the queue but when all goroutines
-	// have completed existing items then shutdown
 	defer c.queue.ShutDown()
-
 	c.logger.Info("Controller.Run: initiating")
-
-	// run the informer to start listing and watching resources
 	go c.informer.Run(stopCh)
-
-	// do the initial synchronization (one time) to populate resources
 	if !cache.WaitForCacheSync(stopCh, c.HasSynced) {
 		utilruntime.HandleError(fmt.Errorf("Error syncing cache"))
 		return
 	}
 	c.logger.Info("Controller.Run: cache sync complete")
-
-	// run the runWorker method every second with a stop channel
 	wait.Until(c.runWorker, time.Second, stopCh)
 }
 
@@ -119,7 +105,7 @@ func (c *Controller) processNextItem() bool {
 	// a code path of successful queue key processing
 	if !exists {
 		c.logger.Infof("Controller.processNextItem: object deleted detected: %s", keyRaw)
-		c.handler.ObjectDeleted(item)
+		c.handler.ObjectDeleted(key, item)
 		c.queue.Forget(key)
 	} else {
 		c.logger.Infof("Controller.processNextItem: object created detected: %s", keyRaw)
