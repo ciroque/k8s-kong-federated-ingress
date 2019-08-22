@@ -19,7 +19,7 @@ import (
 )
 
 // retrieve the Kubernetes cluster client from outside of the cluster
-func getKubernetesClient() kubernetes.Interface {
+func GetKubernetesClient() kubernetes.Interface {
 	// construct the path to resolve to `~/.kube/config`
 	kubeConfigPath := os.Getenv("HOME") + "/.kube/config"
 
@@ -42,7 +42,7 @@ func getKubernetesClient() kubernetes.Interface {
 func main() {
 
 	// get the Kubernetes client for connectivity
-	client := getKubernetesClient()
+	client := GetKubernetesClient()
 
 	// create the informer so that we can not only list resources
 	// but also watch them for all Ingress resources in the default namespace
@@ -97,6 +97,9 @@ func main() {
 			// a resource was deleted but it is still contained in the index
 			//
 			// this then in turn calls MetaNamespaceKeyFunc
+
+			log.Infof(">>>>>>>>\n\n\n%s\n\n\n<<<<<<<<<<", obj)
+
 			key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 			log.Infof("Delete Ingress: %s", key)
 			if err == nil {

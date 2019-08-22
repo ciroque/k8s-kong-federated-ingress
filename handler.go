@@ -15,7 +15,10 @@ type Handler interface {
 }
 
 // TestHandler is a sample implementation of Handler
-type TestHandler struct{}
+type TestHandler struct{
+	kingKong KingKong
+
+}
 
 // Init handles any handler initialization
 func (t *TestHandler) Init() error {
@@ -29,20 +32,19 @@ func (t *TestHandler) ObjectCreated(obj interface{}) {
 	// assert the type to a Ingress object to pull out relevant data
 	ingress := obj.(*network_v1beta1.Ingress)
 
-	log.Infof("Name: %s", ingress.Name)
-	log.Infof("Cluster mame: %s", ingress.ClusterName)
-	log.Infof("String: %s", ingress.String())
-	log.Infof("Annotations: %s", ingress.Annotations["ingress.marchex.net/kong-server"])
+	ingressSpec := ingress.Spec
+	kongHosts := ingress.Annotations["ingress.marchex.net/kong-hosts"]
+	t.kingKong.UpsertKongObjects(ingressSpec, kongHosts)
+	//
+	//log.Infof("Name: %s", ingress.Name)
+	//log.Infof("String: %s", ingress.Spec)
+	//log.Infof("Kong Hosts to update: %s", ingress.Annotations["ingress.marchex.net/kong-hosts"])
 }
 
 // ObjectDeleted is called when an object is deleted
 func (t *TestHandler) ObjectDeleted(key interface{}, obj interface{}) {
 	log.Infof("TestHandler.ObjectDeleted: %s", key)
-	//ingress := obj.(*network_v1beta1.Ingress)
-	//
-	//log.Infof("Name: %s", ingress.Name)
-	//log.Infof("Cluster mame: %s", ingress.ClusterName)
-	//log.Infof("String: %s", ingress.String())
+	t.kingKong.DeleteKongObjects(key.(string))
 }
 
 // ObjectUpdated is called when an object is updated
