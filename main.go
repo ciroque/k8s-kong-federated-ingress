@@ -9,7 +9,7 @@ import (
 
 	//api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	network_v1beta1 "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -53,13 +53,15 @@ func main() {
 		&cache.ListWatch{
 			ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
 				// list all of the ingresses (Ingress resource) in the default namespace
+				//return client.NetworkingV1beta1().Ingresses("app-services").List(options)
 				return client.NetworkingV1beta1().Ingresses(meta_v1.NamespaceAll).List(options)
 			},
 			WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
+				//return client.NetworkingV1beta1().Ingresses("app-services").Watch(options)
 				return client.NetworkingV1beta1().Ingresses(meta_v1.NamespaceAll).Watch(options)
 			},
 		},
-		&network_v1beta1.Ingress{},
+		&networking.Ingress{},
 		0,             // no resync (period of 0)
 		cache.Indexers{},
 	)

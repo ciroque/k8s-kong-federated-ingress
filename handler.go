@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
-	//core_v1 "k8s.io/api/core/v1"
-	network_v1beta1 "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1beta1"
 )
 
 // Handler interface contains the methods that are required
@@ -30,15 +30,12 @@ func (t *TestHandler) Init() error {
 func (t *TestHandler) ObjectCreated(obj interface{}) {
 	log.Info("TestHandler.ObjectCreated")
 	// assert the type to a Ingress object to pull out relevant data
-	ingress := obj.(*network_v1beta1.Ingress)
 
-	ingressSpec := ingress.Spec
-	kongHosts := ingress.Annotations["ingress.marchex.net/kong-hosts"]
-	t.kingKong.UpsertKongObjects(ingressSpec, kongHosts)
-	//
-	//log.Infof("Name: %s", ingress.Name)
-	//log.Infof("String: %s", ingress.Spec)
-	//log.Infof("Kong Hosts to update: %s", ingress.Annotations["ingress.marchex.net/kong-hosts"])
+	ingress := obj.(*networking.Ingress)
+	fmt.Println(ingress)
+
+	//kongHosts := ingress.Annotations["k8s-kong-federated-ingress/kong-hosts"]
+	t.kingKong.UpsertKongObjects(ingress)
 }
 
 // ObjectDeleted is called when an object is deleted

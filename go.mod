@@ -4,8 +4,14 @@ go 1.12
 
 require (
 	github.com/Sirupsen/logrus v1.0.6
-	k8s.io/api v0.0.0-20190620084959-7cf5895f2711
-	k8s.io/apimachinery v0.0.0-20190612205821-1799e75a0719
+	github.com/ciroque/kongo v0.0.0-20190829212754-a597fdd5be40
+	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
+	github.com/hbagdi/go-kong v0.9.0 // indirect
+	github.com/sirupsen/logrus v1.4.2 // indirect
+	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
+	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
+	k8s.io/api v0.0.0-20190820101039-d651a1528133
+	k8s.io/apimachinery v0.0.0-20190820100750-21ddcbbef9e1
 	k8s.io/client-go v0.0.0-20190620085101-78d2af792bab
 )
 
