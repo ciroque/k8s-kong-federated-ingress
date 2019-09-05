@@ -1,4 +1,4 @@
-package main
+package kong
 
 import (
 	"fmt"
@@ -8,32 +8,19 @@ import (
 	networking "k8s.io/api/networking/v1beta1"
 )
 
-type KingKong struct {
+type Kong struct {
 }
 
-// Init handles any handler initialization
-func (k *KingKong) Init() error {
-	log.Info("TestHandler.Init")
+func (k *Kong) Init() error {
 	return nil
 }
 
-func (k *KingKong) DeleteKongObjects(ingressName string) {
-	log.Infof("KingKong Deleting: %s", ingressName)
-}
-
-func (k *KingKong) UpsertKongObjects(ingress *networking.Ingress) error {
-	//log.Infof("KingKong Updating: %v", ingress)
+func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
 	baseUrl := "http://localhost:8001"
 	kongo, err := client.NewKongo(&baseUrl)
 	if err != nil {
 		return err
 	}
-
-	//addresses := []*string{}
-	//for _, ingress := range ingress.Status.LoadBalancer.Ingress {
-	//	address := fmt.Sprintf("%s:%i", ingress.IP, 80)
-	//	addresses = append(addresses, &address)
-	//}
 
 	buildAddresses := func(backend networking.IngressBackend, ingresses []v1.LoadBalancerIngress) []*string {
 		addresses := []*string{}
@@ -72,8 +59,20 @@ func (k *KingKong) UpsertKongObjects(ingress *networking.Ingress) error {
 
 		}
 	}
+	return nil
+}
 
-	//address := "localhost"
+func (k *Kong) DeleteKongObjects(ingress *networking.Ingress) error {
+	log.Infof("Kong Deleting: %v", ingress)
+	return nil
+}
 
-	return err
+func (k *Kong) UpdateKongObjects(oldIngress *networking.Ingress, newIngress *networking.Ingress) error {
+	log.Infof("Kong Updating: %v => %v", oldIngress, newIngress)
+	//baseUrl := "http://localhost:8001"
+	//kongo, err := client.NewKongo(&baseUrl)
+	//if err != nil {
+	//	return err
+	//}
+	return nil
 }
