@@ -12,6 +12,8 @@ github.com/ciroque/kongo v0.0.0-20190904193303-53d30b98be0d h1:cQbQbKVPMTCi/v6Qr
 github.com/ciroque/kongo v0.0.0-20190904193303-53d30b98be0d/go.mod h1:aaPpLCqWURH1PiR8Jx83HOxHgjTL+82lTmRHdefkk1M=
 github.com/ciroque/kongo v0.0.0-20190904213606-ecb0efa12800 h1:eKMmt+Wnm7EMO5kiIj2ZfNgg7ywcJqyuh1etuT2FcTI=
 github.com/ciroque/kongo v0.0.0-20190904213606-ecb0efa12800/go.mod h1:aaPpLCqWURH1PiR8Jx83HOxHgjTL+82lTmRHdefkk1M=
+github.com/ciroque/kongo v0.0.0-20190905214834-2e0851b8b2c5 h1:trkq0AFdwF5o4WMHtyeN8rgv4RmNKp4ST92YbBDeyJ4=
+github.com/ciroque/kongo v0.0.0-20190905214834-2e0851b8b2c5/go.mod h1:aaPpLCqWURH1PiR8Jx83HOxHgjTL+82lTmRHdefkk1M=
 github.com/davecgh/go-spew v0.0.0-20151105211317-5215b55f46b2/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

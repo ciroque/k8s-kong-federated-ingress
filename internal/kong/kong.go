@@ -16,6 +16,8 @@ func (k *Kong) Init() error {
 }
 
 func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
+
+	// TODO: Move this to the module level and use parameters to configure
 	baseUrl := "http://localhost:8001"
 	kongo, err := client.NewKongo(&baseUrl)
 	if err != nil {
@@ -31,6 +33,8 @@ func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
 		return addresses
 	}
 
+	k8sService := new(client.K8sService)
+
 	for ridx, rule := range ingress.Spec.Rules {
 		for pidx, path := range rule.HTTP.Paths {
 			addresses := buildAddresses(path.Backend, ingress.Status.LoadBalancer.Ingress)
@@ -42,7 +46,6 @@ func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
 			}
 			fmt.Println("---------------------------------------------------------------------------------------------")
 
-			k8sService := new(client.K8sService)
 
 			k8sService.Name = path.Backend.ServiceName
 			k8sService.Port = int(path.Backend.ServicePort.IntVal)
@@ -64,7 +67,29 @@ func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
 
 func (k *Kong) DeleteKongObjects(ingress *networking.Ingress) error {
 	log.Infof("Kong Deleting: %v", ingress)
-	return nil
+
+	var gerr error
+
+	// TODO: Move this to the module level and use parameters to configure
+	baseUrl := "http://localhost:8001"
+	kongo, err := client.NewKongo(&baseUrl)
+	if err != nil {
+		return err
+	}
+
+	k8sService := new(client.K8sService)
+
+	for _, rule := range ingress.Spec.Rules {
+		for _, path := range rule.HTTP.Paths {
+			k8sService.Name = path.Backend.ServiceName
+			err := kongo.DeregisterK8sService(k8sService)
+			if err != nil {
+				gerr = fmt.Errorf("error deregistering service '%s': %v", k8sService.Name, err)
+			}
+		}
+	}
+
+	return gerr
 }
 
 func (k *Kong) UpdateKongObjects(oldIngress *networking.Ingress, newIngress *networking.Ingress) error {
