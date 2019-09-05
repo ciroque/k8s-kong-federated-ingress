@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/Sirupsen/logrus v1.0.6
-	github.com/ciroque/kongo v0.0.0-20190829212754-a597fdd5be40
+	github.com/ciroque/kongo v0.0.0-20190904213606-ecb0efa12800
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/hbagdi/go-kong v0.9.0 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
