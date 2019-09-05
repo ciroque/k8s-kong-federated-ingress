@@ -54,7 +54,6 @@ func (c *Controller) runWorker() {
 	log.Info("Controller.runWorker: completed")
 }
 
-// THE NEW HOTNESS
 func (c *Controller) processNextItem() bool {
 	log.Info("Controller.processNextItem: start")
 
@@ -66,87 +65,31 @@ func (c *Controller) processNextItem() bool {
 
 	defer c.Queue.Done(e)
 
+	withRetry := func(err error) {
+		if err != nil {
+			if c.Queue.NumRequeues(e) < 5 {
+				c.Queue.AddRateLimited(e)
+			} else {
+				c.Queue.Forget(e)
+			}
+		}
+	}
+
 	event := e.(events.Event)
 
 	switch event.Type {
 	case events.Created:
 		{
-			c.Handler.ObjectCreated(event.Resource)
+			withRetry(c.Handler.ObjectCreated(event.Resource))
 		}
 	case events.Deleted:
 		{
-			c.Handler.ObjectDeleted(event.Resource)
+			withRetry(c.Handler.ObjectDeleted(event.Resource))
 		}
 	case events.Updated:
 		{
-			c.Handler.ObjectUpdated(event.PreviousResource, event.Resource)
+			withRetry(c.Handler.ObjectUpdated(event.PreviousResource, event.Resource))
 		}
-	}
-
-	// keep the worker loop running by returning true
-	return true
-}
-
-// OLD AND BUSTED
-// processNextItem retrieves each queued item and takes the
-// necessary Handler action based off of if the item was
-// created or deleted
-func (c *Controller) processNextItemPrev() bool {
-	log.Info("Controller.processNextItem: start")
-
-	// fetch the next item (blocking) from the Queue to process or
-	// if a shutdown is requested then return out of this to stop
-	// processing
-	key, quit := c.Queue.Get()
-
-	// stop the worker loop from running as this indicates we
-	// have sent a shutdown message that the Queue has indicated
-	// from the Get method
-	if quit {
-		return false
-	}
-
-	defer c.Queue.Done(key)
-
-	// assert the string out of the key (format `namespace/name`)
-	keyRaw := key.(string)
-
-	// take the string key and get the object out of the indexer
-	//
-	// item will contain the complex object for the resource and
-	// exists is a bool that'll indicate whether or not the
-	// resource was created (true) or deleted (false)
-	//
-	// if there is an error in getting the key from the index
-	// then we want to retry this particular Queue key a certain
-	// number of times (5 here) before we forget the Queue key
-	// and throw an error
-	item, exists, err := c.Informer.GetIndexer().GetByKey(keyRaw)
-	if err != nil {
-		if c.Queue.NumRequeues(key) < 5 {
-			c.Logger.Errorf("Controller.processNextItem: Failed processing item with key %s with error %v, retrying", key, err)
-			c.Queue.AddRateLimited(key)
-		} else {
-			c.Logger.Errorf("Controller.processNextItem: Failed processing item with key %s with error %v, no more retries", key, err)
-			c.Queue.Forget(key)
-			utilruntime.HandleError(err)
-		}
-	}
-
-	// if the item doesn't exist then it was deleted and we need to fire off the Handler's
-	// ObjectDeleted method. but if the object does exist that indicates that the object
-	// was created (or updated) so run the ObjectCreated method
-	//
-	// after both instances, we want to forget the key from the Queue, as this indicates
-	// a code path of successful Queue key processing
-	if !exists {
-		c.Logger.Infof("Controller.processNextItem: object deleted detected: %s", keyRaw)
-		c.Handler.ObjectDeleted(item)
-		c.Queue.Forget(key)
-	} else {
-		c.Logger.Infof("Controller.processNextItem: object created detected: %s", keyRaw)
-		c.Handler.ObjectCreated(item)
-		c.Queue.Forget(key)
 	}
 
 	// keep the worker loop running by returning true
