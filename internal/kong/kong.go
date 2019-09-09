@@ -1,3 +1,9 @@
+/*
+
+	2019-09-09 : DEPRECATING THIS ; THE NEW HOTNESS IS Translation / Registration implementation
+
+*/
+
 package kong
 
 import (

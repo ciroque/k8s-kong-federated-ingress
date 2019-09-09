@@ -1,18 +1,17 @@
 package main
 
 import (
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/events"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/handler"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/controller"
+	"github.com/ciroque/k8s-kong-federated-ingress/internal/eventing"
+	"github.com/ciroque/k8s-kong-federated-ingress/internal/kong"
 	"os"
 	"os/signal"
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
 
+	networking "k8s.io/api/networking/v1beta1"
 	//api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	networking "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -65,7 +64,7 @@ func main() {
 			},
 		},
 		&networking.Ingress{},
-		0,             // no resync (period of 0)
+		0, // no resync (period of 0)
 		cache.Indexers{},
 	)
 
@@ -77,17 +76,17 @@ func main() {
 	//  - deleting resources
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			e := events.NewEvent(events.Created, obj, nil)
+			e := eventing.NewEvent(eventing.Created, obj, nil)
 			eventQueue.Add(e)
 			log.Infof("Added Created event to eventQueue %v", e)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
-			e := events.NewEvent(events.Updated, newObj, oldObj)
+			e := eventing.NewEvent(eventing.Updated, newObj, oldObj)
 			eventQueue.Add(e)
 			log.Infof("Added Updated event to eventQueue %v", e)
 		},
 		DeleteFunc: func(obj interface{}) {
-			e := events.NewEvent(events.Deleted, obj, nil)
+			e := eventing.NewEvent(eventing.Deleted, obj, nil)
 			eventQueue.Add(e)
 			log.Infof("Added Deleted event to eventQueue %v", e)
 		},
@@ -96,12 +95,15 @@ func main() {
 	// construct the Controller object which has all of the necessary components to
 	// handle logging, connections, informing (listing and watching), the queue,
 	// and the handler
-	controller := controller.Controller{
+	controller := eventing.Controller{
 		Logger:    log.NewEntry(log.New()),
 		Clientset: client,
 		Informer:  informer,
 		Queue:     eventQueue,
-		Handler:   &handler.K8sApiHandler{},
+		Handler: eventing.ApiHandler{
+			Translator: &kong.Translation{},
+			Registrar:  &kong.Registration{},
+		},
 	}
 
 	// use a channel to synchronize the finalization for a graceful shutdown

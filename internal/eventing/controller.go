@@ -1,9 +1,7 @@
-package controller
+package eventing
 
 import (
 	"fmt"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/events"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/handler"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -19,7 +17,7 @@ type Controller struct {
 	Clientset kubernetes.Interface
 	Queue     workqueue.RateLimitingInterface
 	Informer  cache.SharedIndexInformer
-	Handler   handler.Handler
+	Handler   ApiHandler
 }
 
 func (c *Controller) Run(stopCh <-chan struct{}) {
@@ -75,18 +73,18 @@ func (c *Controller) processNextItem() bool {
 		}
 	}
 
-	event := e.(events.Event)
+	event := e.(Event)
 
 	switch event.Type {
-	case events.Created:
+	case Created:
 		{
 			withRetry(c.Handler.ObjectCreated(event.Resource))
 		}
-	case events.Deleted:
+	case Deleted:
 		{
 			withRetry(c.Handler.ObjectDeleted(event.Resource))
 		}
-	case events.Updated:
+	case Updated:
 		{
 			withRetry(c.Handler.ObjectUpdated(event.PreviousResource, event.Resource))
 		}

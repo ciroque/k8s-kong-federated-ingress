@@ -1,4 +1,4 @@
-package events
+package eventing
 
 type EventType int
 
