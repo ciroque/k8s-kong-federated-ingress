@@ -16,7 +16,6 @@ func (k *Kong) Init() error {
 }
 
 func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
-
 	// TODO: Move this to the module level and use parameters to configure
 	baseUrl := "http://localhost:8001"
 	kongo, err := client.NewKongo(&baseUrl)
@@ -25,7 +24,7 @@ func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
 	}
 
 	buildAddresses := func(backend networking.IngressBackend, ingresses []v1.LoadBalancerIngress) []*string {
-		addresses := []*string{}
+		var addresses []*string
 		for _, ingress := range ingresses {
 			address := fmt.Sprintf("%s:%v", ingress.IP, backend.ServicePort.IntVal)
 			addresses = append(addresses, &address)
@@ -35,31 +34,19 @@ func (k *Kong) CreateKongObjects(ingress *networking.Ingress) error {
 
 	k8sService := new(client.K8sService)
 
-	for ridx, rule := range ingress.Spec.Rules {
-		for pidx, path := range rule.HTTP.Paths {
+	for _, rule := range ingress.Spec.Rules {
+		for _, path := range rule.HTTP.Paths {
 			addresses := buildAddresses(path.Backend, ingress.Status.LoadBalancer.Ingress)
 
-			fmt.Println("---------------------------------------------------------------------------------------------")
-			fmt.Println("Rule[", ridx, "]", "Path[", pidx, "] := ", fmt.Sprintf("{path: %s, serviceName: %s, servicePort: %v }", path.Path, path.Backend.ServiceName, path.Backend.ServicePort.IntVal))
-			for _, address := range addresses {
-				fmt.Println(fmt.Sprintf("Address: %v", *address))
-			}
-			fmt.Println("---------------------------------------------------------------------------------------------")
-
-
-			k8sService.Name = path.Backend.ServiceName
+			k8sService.Name = path.Backend.ServiceName // TODO: Do we need to support multiple paths to the same service? If so this will need to change!
 			k8sService.Port = int(path.Backend.ServicePort.IntVal)
 			k8sService.Path = path.Path /// NOTE: This could point to a subset of the path registered in the Ingress resource...
 			k8sService.Addresses = addresses
 
-			kongService, err := kongo.RegisterK8sService(k8sService)
-
+			_, err := kongo.RegisterK8sService(k8sService)
 			if err != nil {
 				fmt.Println("ERROR Creating ", path.Backend.ServiceName, ": ", err)
 			}
-
-			fmt.Println(">>>> ", kongService)
-
 		}
 	}
 	return nil
