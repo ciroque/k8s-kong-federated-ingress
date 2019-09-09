@@ -7,7 +7,6 @@ import (
 	networking "k8s.io/api/networking/v1beta1"
 )
 
-// Handler interface contains the methods that are required
 type Handler interface {
 	Init() error
 	ObjectCreated(obj interface{}) error
@@ -21,54 +20,54 @@ type ApiHandler struct {
 	Registrar  kong.Registrar  /// STEVE: This can be mocked for tests
 }
 
-func (t *ApiHandler) Init() error {
+func (apiHandler *ApiHandler) Init() error {
 	log.Info("ApiHandler.Init")
 	return nil
 }
 
-func (t *ApiHandler) ObjectCreated(obj interface{}) error {
+func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 	log.Info("ApiHandler.ObjectCreated")
 	ingress := obj.(*networking.Ingress)
 
 	// THE NEW HOTNESS
-	service, err := t.Translator.IngressToService(ingress)
+	service, err := apiHandler.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectCreated: %v", err)
 	}
-	_, _ = t.Registrar.Register(service)
+	_, _ = apiHandler.Registrar.Register(service)
 
 	// OLD AND BUSTED
-	return t.Kong.CreateKongObjects(ingress)
+	return apiHandler.Kong.CreateKongObjects(ingress)
 }
 
-func (t *ApiHandler) ObjectDeleted(obj interface{}) error {
+func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
 	log.Infof("ApiHandler.ObjectDeleted: %v", obj)
 	ingress := obj.(*networking.Ingress)
 
 	// THE NEW HOTNESS
-	service, err := t.Translator.IngressToService(ingress)
+	service, err := apiHandler.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectDeleted: %v", err)
 	}
-	_ = t.Registrar.Deregister(service)
+	_ = apiHandler.Registrar.Deregister(service)
 
 	// OLD AND BUSTED
-	return t.Kong.DeleteKongObjects(ingress)
+	return apiHandler.Kong.DeleteKongObjects(ingress)
 }
 
-func (t *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
+func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
 	log.Info("ApiHandler.ObjectUpdated")
 	oldIngress := objOld.(*networking.Ingress)
 	newIngress := objNew.(*networking.Ingress)
 
 	// THE NEW HOTNESS
-	oldService, err := t.Translator.IngressToService(oldIngress)
-	newService, err := t.Translator.IngressToService(newIngress)
+	oldService, err := apiHandler.Translator.IngressToService(oldIngress)
+	newService, err := apiHandler.Translator.IngressToService(newIngress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectUpdated: %v", err)
 	}
-	_, _ = t.Registrar.Modify(oldService, newService)
+	_, _ = apiHandler.Registrar.Modify(oldService, newService)
 
 	// OLD AND BUSTED
-	return t.Kong.UpdateKongObjects(oldIngress, newIngress)
+	return apiHandler.Kong.UpdateKongObjects(oldIngress, newIngress)
 }
