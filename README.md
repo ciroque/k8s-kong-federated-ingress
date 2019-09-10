@@ -11,7 +11,3 @@ This project is based on the article and sample code from:
 [Base sample for a custom controller in Kubernetes working with core resources](https://github.com/trstringer/k8s-controller-core-resource)
 
 ## Questions
-
-- Retry semantics for failed creation of King Kong objects, are there samples in k8s land?
-- Unit testing?
-
