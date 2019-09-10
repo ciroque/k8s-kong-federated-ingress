@@ -15,7 +15,6 @@ type Handler interface {
 }
 
 type ApiHandler struct {
-	Kong       kong.Kong
 	Translator kong.Translator /// STEVE: This can be mocked for tests
 	Registrar  kong.Registrar  /// STEVE: This can be mocked for tests
 }
@@ -29,30 +28,25 @@ func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 	log.Info("ApiHandler.ObjectCreated")
 	ingress := obj.(*networking.Ingress)
 
-	// THE NEW HOTNESS
 	service, err := apiHandler.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectCreated: %v", err)
 	}
-	_, _ = apiHandler.Registrar.Register(service)
 
-	// OLD AND BUSTED
-	return apiHandler.Kong.CreateKongObjects(ingress)
+	_, err = apiHandler.Registrar.Register(service)
+	return err
 }
 
 func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
 	log.Infof("ApiHandler.ObjectDeleted: %v", obj)
 	ingress := obj.(*networking.Ingress)
 
-	// THE NEW HOTNESS
 	service, err := apiHandler.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectDeleted: %v", err)
 	}
-	_ = apiHandler.Registrar.Deregister(service)
 
-	// OLD AND BUSTED
-	return apiHandler.Kong.DeleteKongObjects(ingress)
+	return apiHandler.Registrar.Deregister(service)
 }
 
 func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
@@ -60,14 +54,16 @@ func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
 	oldIngress := objOld.(*networking.Ingress)
 	newIngress := objNew.(*networking.Ingress)
 
-	// THE NEW HOTNESS
 	oldService, err := apiHandler.Translator.IngressToService(oldIngress)
+	if err != nil {
+		return fmt.Errorf("ObjectUpdated error translating oldIngress(%v): %v", oldIngress, err)
+	}
+
 	newService, err := apiHandler.Translator.IngressToService(newIngress)
 	if err != nil {
-		return fmt.Errorf("error handling ObjectUpdated: %v", err)
+		return fmt.Errorf("ObjectUpdated error translating newIngress(%v): %v", newIngress, err)
 	}
-	_, _ = apiHandler.Registrar.Modify(oldService, newService)
 
-	// OLD AND BUSTED
-	return apiHandler.Kong.UpdateKongObjects(oldIngress, newIngress)
+	_, err = apiHandler.Registrar.Modify(oldService, newService)
+	return err
 }
