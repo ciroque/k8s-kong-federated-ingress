@@ -97,3 +97,62 @@ func TestTranslation_IngressToService(t *testing.T) {
 		t.Fatalf("expected Service to be: %v, got: %v", expectedService, *actualService)
 	}
 }
+
+// Having am empty list of addresses is the most likely case when Ingress resources are created
+// (as it takes k8s some amount of time to requisition the addresses).
+// A subsequent Update event will contain the Address. The Registration.Modify method should handle that.
+func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
+	translation := new(Translation)
+	testHost := "test-host"
+	testNamespace := "testing-namespace"
+	testServiceName := "test-service"
+	var addresses []string
+	expectedService := k8s.Service{
+		Addresses: addresses,
+		Name:      translation.FormatServiceName(testNamespace, testServiceName),
+		Paths:     []string{"/apple", "/banana"},
+		Port:      80,
+	}
+
+	ingress := networking.Ingress{
+		Spec: networking.IngressSpec{
+			Backend: nil,
+			TLS:     nil,
+			Rules: []networking.IngressRule{
+				{
+					testHost,
+					networking.IngressRuleValue{
+						HTTP: &networking.HTTPIngressRuleValue{
+							Paths: []networking.HTTPIngressPath{
+								{
+									Path: expectedService.Paths[0],
+									Backend: networking.IngressBackend{
+										ServiceName: testServiceName,
+										ServicePort: intstr.IntOrString{IntVal: int32(expectedService.Port)},
+									},
+								},
+								{
+									Path: expectedService.Paths[1],
+									Backend: networking.IngressBackend{
+										ServiceName: testServiceName,
+										ServicePort: intstr.IntOrString{IntVal: int32(expectedService.Port)},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	ingress.Namespace = testNamespace
+	actualService, err := translation.IngressToService(&ingress)
+
+	if err != nil {
+		t.Fatalf("error translating networking.Ingress to k8s.Service: %v", err)
+	}
+
+	if !servicesMatch(expectedService, *actualService) {
+		t.Fatalf("expected Service to be: %v, got: %v", expectedService, *actualService)
+	}
+}
