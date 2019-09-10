@@ -1,3 +1,11 @@
+/*
+
+	Entrypoint for k8s kong federated ingress controller.
+
+	Much of this code was lifted from: https://github.com/trstringer/k8s-controller-core-resource
+
+*/
+
 package main
 
 import (

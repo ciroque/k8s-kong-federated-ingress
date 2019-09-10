@@ -1,8 +1,8 @@
 package k8s
 
 type Service struct {
-	Addresses []*string
+	Addresses []string
 	Name      string
-	Path      string
+	Paths     []string
 	Port      int
 }

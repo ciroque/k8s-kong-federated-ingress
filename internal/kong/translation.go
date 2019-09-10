@@ -13,5 +13,19 @@ type Translation struct {
 }
 
 func (translation *Translation) IngressToService(ingress *networking.Ingress) (*k8s.Service, error) {
-	return nil, nil
+
+	k8sService := new(k8s.Service)
+	var paths []string
+
+	for _, rule := range ingress.Spec.Rules {
+		for _, path := range rule.HTTP.Paths {
+			k8sService.Name = path.Backend.ServiceName
+			k8sService.Port = int(path.Backend.ServicePort.IntVal)
+			paths = append(paths, path.Path)
+		}
+	}
+
+	k8sService.Paths = paths
+
+	return k8sService, nil
 }
