@@ -7,25 +7,35 @@ import (
 )
 
 type Registrar interface {
-	Register(service *k8s.Service) (*RegisteredResources, error)
+	Register(service *k8s.Service) error
 	Deregister(service *k8s.Service) error
-	Modify(prevService *k8s.Service, newService *k8s.Service) (*RegisteredResources, error)
+	Modify(prevService *k8s.Service, newService *k8s.Service) error
+}
+
+type ClientInterface interface {
+	CreateUpstream() error
 }
 
 type Registration struct {
-	Kong        *kong.Client
+	Kong        ClientInterface
 	context     context.Context
 	listOptions kong.ListOpt
+}
+
+func NewRegistration(kongClient ClientInterface) (*Registration, error) {
+	registration := new(Registration)
+	registration.Kong = kongClient
+	return registration, nil
 }
 
 func (registration *Registration) Deregister(service *k8s.Service) error {
 	return nil
 }
 
-func (registration *Registration) Register(service *k8s.Service) (*RegisteredResources, error) {
-	return nil, nil
+func (registration *Registration) Register(service *k8s.Service) error {
+	return nil
 }
 
-func (registration *Registration) Modify(prevService *k8s.Service, newService *k8s.Service) (*RegisteredResources, error) {
-	return nil, nil
+func (registration *Registration) Modify(prevService *k8s.Service, newService *k8s.Service) error {
+	return nil
 }

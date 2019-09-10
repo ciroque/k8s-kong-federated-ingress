@@ -33,8 +33,7 @@ func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 		return fmt.Errorf("error handling ObjectCreated: %v", err)
 	}
 
-	_, err = apiHandler.Registrar.Register(service)
-	return err
+	return  apiHandler.Registrar.Register(service)
 }
 
 func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
@@ -64,6 +63,5 @@ func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
 		return fmt.Errorf("ObjectUpdated error translating newIngress(%v): %v", newIngress, err)
 	}
 
-	_, err = apiHandler.Registrar.Modify(oldService, newService)
-	return err
+	return apiHandler.Registrar.Modify(oldService, newService)
 }
