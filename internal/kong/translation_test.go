@@ -28,19 +28,21 @@ func servicesMatch(l k8s.Service, r k8s.Service) bool {
 }
 
 func TestTranslation_IngressToService(t *testing.T) {
-	//addresses := []string{}
+	translation := new(Translation)
+	testHost := "test-host"
+	testNamespace := "testing-namespace"
+	testServiceName := "test-service"
 	addresses := []string{
 		"10.200.30.400:80",
 		"10.200.30.401:80",
 	}
 	expectedService := k8s.Service{
 		Addresses: addresses,
-		Name:      "test-service-name",
+		Name:      translation.FormatServiceName(testNamespace, testServiceName),
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
 	}
 
-	translation := new(Translation)
 	ingress := networking.Ingress{
 		Status: networking.IngressStatus{
 			LoadBalancer: v1.LoadBalancerStatus{
@@ -59,21 +61,21 @@ func TestTranslation_IngressToService(t *testing.T) {
 			TLS:     nil,
 			Rules: []networking.IngressRule{
 				{
-					"test-host",
+					testHost,
 					networking.IngressRuleValue{
 						HTTP: &networking.HTTPIngressRuleValue{
 							Paths: []networking.HTTPIngressPath{
 								{
 									Path: expectedService.Paths[0],
 									Backend: networking.IngressBackend{
-										ServiceName: expectedService.Name,
+										ServiceName: testServiceName,
 										ServicePort: intstr.IntOrString{IntVal: int32(expectedService.Port)},
 									},
 								},
 								{
 									Path: expectedService.Paths[1],
 									Backend: networking.IngressBackend{
-										ServiceName: expectedService.Name,
+										ServiceName: testServiceName,
 										ServicePort: intstr.IntOrString{IntVal: int32(expectedService.Port)},
 									},
 								},
@@ -84,7 +86,7 @@ func TestTranslation_IngressToService(t *testing.T) {
 			},
 		},
 	}
-	ingress.Namespace = "testing-namespace"
+	ingress.Namespace = testNamespace
 	actualService, err := translation.IngressToService(&ingress)
 
 	if err != nil {

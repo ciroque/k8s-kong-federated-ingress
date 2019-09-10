@@ -14,14 +14,17 @@ type Translator interface {
 type Translation struct {
 }
 
+func (translation *Translation) FormatServiceName(namespace string, service string) string {
+	return fmt.Sprintf("%s.%s.service", namespace, service)
+}
+
 func (translation *Translation) IngressToService(ingress *networking.Ingress) (*k8s.Service, error) {
 	k8sService := new(k8s.Service)
 	var paths []string
 
 	for _, rule := range ingress.Spec.Rules {
 		for _, path := range rule.HTTP.Paths {
-			//k8sService.Name = ingress.Namespace + "." + path.Backend.ServiceName + ".service"
-			k8sService.Name = path.Backend.ServiceName
+			k8sService.Name = translation.FormatServiceName(ingress.Namespace, path.Backend.ServiceName)
 			k8sService.Port = int(path.Backend.ServicePort.IntVal)
 			paths = append(paths, path.Path)
 		}
