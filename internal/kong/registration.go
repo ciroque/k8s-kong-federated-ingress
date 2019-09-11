@@ -39,6 +39,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 	}
 
 	/// Route
+	//serviceDef.Paths become Routes
 
 	/// Upstream
 	upstream, _ := buildUpstream(serviceDef, resourceNames)
@@ -48,6 +49,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 	}
 
 	/// Targets
+	//serviceDef.Addresses become Targets
 
 	return err
 }

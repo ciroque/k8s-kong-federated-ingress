@@ -110,7 +110,7 @@ func main() {
 		Queue:     eventQueue,
 		Handler: eventing.ApiHandler{
 			Translator: &kong.Translation{},
-			Registrar:  &kong.Registration{},
+			Registrar:  &kong.Registration{}, /// TODO: Create a go-kong.Client and pass it in...
 		},
 	}
 
