@@ -28,17 +28,24 @@ func (registration *Registration) Deregister(service ServiceDef) error {
 	return nil
 }
 
-func (registration *Registration) Register(service ServiceDef) error {
-	/// ServiceDef
-	svc, _ := buildService(service)
-	registration.Kong.Services.Create(registration.context, svc)
+func (registration *Registration) Register(serviceDef ServiceDef) error {
+	resourceNames := NewResourceNames(serviceDef)
+
+	/// Service
+	svc, _ := buildService(serviceDef, resourceNames)
+	_, err := registration.Kong.Services.Create(registration.context, svc)
+	if err != nil {
+		return fmt.Errorf("Registration::Register failed to create the Service: %v", err)
+	}
 
 	/// Route
 
 	/// Upstream
-
-	upstream, _ := buildUpstream(service)
-	_, err := registration.Kong.Upstreams.Create(registration.context, upstream)
+	upstream, _ := buildUpstream(serviceDef, resourceNames)
+	_, err = registration.Kong.Upstreams.Create(registration.context, upstream)
+	if err != nil {
+		return fmt.Errorf("Registration::Register failed to create the Upstream: %v", err)
+	}
 
 	/// Targets
 
@@ -49,17 +56,16 @@ func (registration *Registration) Modify(prevService ServiceDef, newService Serv
 	return nil
 }
 
-func buildService(service ServiceDef) (gokong.Service, error) {
-	name := fmt.Sprintf("%s.upstream", service.Name)
+func buildService(serviceDef ServiceDef, names ResourceNames) (gokong.Service, error) {
 	kongService := gokong.Service{
 		ClientCertificate: nil,
 		ConnectTimeout:    nil,
 		CreatedAt:         nil,
-		Host:              nil,
+		Host:              &names.UpstreamName,
 		ID:                nil,
-		Name:              &name,
+		Name:              &names.ServiceName,
 		Path:              nil,
-		Port:              nil,
+		Port:              &serviceDef.Port,
 		Protocol:          nil,
 		ReadTimeout:       nil,
 		Retries:           nil,
@@ -72,11 +78,10 @@ func buildService(service ServiceDef) (gokong.Service, error) {
 }
 
 /// TODO: Support for Health Checks
-func buildUpstream(service ServiceDef) (gokong.Upstream, error) {
-	name := fmt.Sprintf("%s.upstream", service.Name)
+func buildUpstream(_ ServiceDef, names ResourceNames) (gokong.Upstream, error) {
 	upstream := gokong.Upstream{
 		ID:                 nil,
-		Name:               &name,
+		Name:               &names.UpstreamName,
 		Algorithm:          nil,
 		Slots:              nil,
 		Healthchecks:       nil,
