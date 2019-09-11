@@ -1,6 +1,7 @@
 package kong
 
 import (
+	"fmt"
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -18,7 +19,12 @@ func TestTranslation_IngressToService(t *testing.T) {
 	}
 	expectedService := ServiceDef{
 		Addresses: addresses,
-		Name:      translation.FormatServiceName(testNamespace, testServiceName),
+		Name:      testServiceName,
+		Names: ResourceNames{
+			ServiceName:  fmt.Sprintf("%s.%s.service", testNamespace, testServiceName),
+			UpstreamName: fmt.Sprintf("%s.%s.upstream", testNamespace, testServiceName),
+		},
+		Namespace: testNamespace,
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
 	}
@@ -74,7 +80,7 @@ func TestTranslation_IngressToService(t *testing.T) {
 	}
 
 	if !ServicesMatch(expectedService, actualService) {
-		t.Fatalf("expected ServiceDef to be: %v, got: %v", expectedService, actualService)
+		t.Fatalf("expected ServiceDef to be:\n\t%v\n, got:\n\t%v", expectedService, actualService)
 	}
 }
 
@@ -86,10 +92,16 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	testHost := "test-host"
 	testNamespace := "testing-namespace"
 	testServiceName := "test-service"
+	resourceNames := ResourceNames{
+		ServiceName:  fmt.Sprintf("%s.%s.service", testNamespace, testServiceName),
+		UpstreamName: fmt.Sprintf("%s.%s.upstream", testNamespace, testServiceName),
+	}
 	var addresses []string
 	expectedService := ServiceDef{
 		Addresses: addresses,
-		Name:      translation.FormatServiceName(testNamespace, testServiceName),
+		Name:      testServiceName,
+		Names:     resourceNames,
+		Namespace: testNamespace,
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
 	}
@@ -133,6 +145,6 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	}
 
 	if !ServicesMatch(expectedService, actualService) {
-		t.Fatalf("expected ServiceDef to be: %v, got: %v", expectedService, actualService)
+		t.Fatalf("expected ServiceDef to be:\n\t%v,\ngot:\n\t%v", expectedService, actualService)
 	}
 }

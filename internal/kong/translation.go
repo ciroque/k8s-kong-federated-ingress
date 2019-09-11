@@ -13,26 +13,24 @@ type Translator interface {
 type Translation struct {
 }
 
-func (translation *Translation) FormatServiceName(namespace string, service string) string {
-	return fmt.Sprintf("%s.%s.service", namespace, service)
-}
-
 func (translation *Translation) IngressToService(ingress *networking.Ingress) (ServiceDef, error) {
-	k8sService := new(ServiceDef)
+	serviceDef := new(ServiceDef)
 	var paths []string
 
 	for _, rule := range ingress.Spec.Rules {
 		for _, path := range rule.HTTP.Paths {
-			k8sService.Name = translation.FormatServiceName(ingress.Namespace, path.Backend.ServiceName)
-			k8sService.Port = int(path.Backend.ServicePort.IntVal)
+			serviceDef.Name = path.Backend.ServiceName // This is a problem if there are multiple paths pointing to different services...
+			serviceDef.Port = int(path.Backend.ServicePort.IntVal)
 			paths = append(paths, path.Path)
 		}
 	}
 
-	k8sService.Paths = paths
-	k8sService.Addresses = buildAddresses(ingress.Status.LoadBalancer.Ingress)
+	serviceDef.Namespace = ingress.Namespace // order matters, the next call depends on this being set...
+	serviceDef.Names = NewResourceNames(*serviceDef)
+	serviceDef.Paths = paths
+	serviceDef.Addresses = buildAddresses(ingress.Status.LoadBalancer.Ingress)
 
-	return *k8sService, nil
+	return *serviceDef, nil
 }
 
 func buildAddresses(ingresses []v1.LoadBalancerIngress) []string {
