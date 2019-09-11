@@ -30,8 +30,19 @@ func (registration *Registration) Deregister(service k8s.Service) error {
 }
 
 func (registration *Registration) Register(service k8s.Service) error {
+	/// Service
+	svc, _ := buildService(service)
+	registration.Kong.Services.Create(registration.context, svc)
+
+	/// Route
+
+	/// Upstream
+
 	upstream, _ := buildUpstream(service)
 	_, err := registration.Kong.Upstreams.Create(registration.context, upstream)
+
+	/// Targets
+
 	return err
 }
 
@@ -39,6 +50,29 @@ func (registration *Registration) Modify(prevService k8s.Service, newService k8s
 	return nil
 }
 
+func buildService(service k8s.Service) (gokong.Service, error) {
+	name := fmt.Sprintf("%s.upstream", service.Name)
+	kongService := gokong.Service{
+		ClientCertificate: nil,
+		ConnectTimeout:    nil,
+		CreatedAt:         nil,
+		Host:              nil,
+		ID:                nil,
+		Name:              &name,
+		Path:              nil,
+		Port:              nil,
+		Protocol:          nil,
+		ReadTimeout:       nil,
+		Retries:           nil,
+		UpdatedAt:         nil,
+		WriteTimeout:      nil,
+		Tags:              nil,
+	}
+
+	return kongService, nil
+}
+
+/// TODO: Support for Health Checks
 func buildUpstream(service k8s.Service) (gokong.Upstream, error) {
 	name := fmt.Sprintf("%s.upstream", service.Name)
 	upstream := gokong.Upstream{
