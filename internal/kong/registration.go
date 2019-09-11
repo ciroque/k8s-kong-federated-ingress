@@ -3,14 +3,13 @@ package kong
 import (
 	"context"
 	"fmt"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	gokong "github.com/hbagdi/go-kong/kong"
 )
 
 type Registrar interface {
-	Register(service k8s.Service) error
-	Deregister(service k8s.Service) error
-	Modify(prevService k8s.Service, newService k8s.Service) error
+	Register(service ServiceDef) error
+	Deregister(service ServiceDef) error
+	Modify(prevService ServiceDef, newService ServiceDef) error
 }
 
 type Registration struct {
@@ -25,12 +24,12 @@ func NewRegistration(kongClient ClientInterface) (Registration, error) {
 	return *registration, nil
 }
 
-func (registration *Registration) Deregister(service k8s.Service) error {
+func (registration *Registration) Deregister(service ServiceDef) error {
 	return nil
 }
 
-func (registration *Registration) Register(service k8s.Service) error {
-	/// Service
+func (registration *Registration) Register(service ServiceDef) error {
+	/// ServiceDef
 	svc, _ := buildService(service)
 	registration.Kong.Services.Create(registration.context, svc)
 
@@ -46,11 +45,11 @@ func (registration *Registration) Register(service k8s.Service) error {
 	return err
 }
 
-func (registration *Registration) Modify(prevService k8s.Service, newService k8s.Service) error {
+func (registration *Registration) Modify(prevService ServiceDef, newService ServiceDef) error {
 	return nil
 }
 
-func buildService(service k8s.Service) (gokong.Service, error) {
+func buildService(service ServiceDef) (gokong.Service, error) {
 	name := fmt.Sprintf("%s.upstream", service.Name)
 	kongService := gokong.Service{
 		ClientCertificate: nil,
@@ -73,7 +72,7 @@ func buildService(service k8s.Service) (gokong.Service, error) {
 }
 
 /// TODO: Support for Health Checks
-func buildUpstream(service k8s.Service) (gokong.Upstream, error) {
+func buildUpstream(service ServiceDef) (gokong.Upstream, error) {
 	name := fmt.Sprintf("%s.upstream", service.Name)
 	upstream := gokong.Upstream{
 		ID:                 nil,

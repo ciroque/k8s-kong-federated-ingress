@@ -1,7 +1,6 @@
 package kong
 
 import (
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -17,7 +16,7 @@ func TestTranslation_IngressToService(t *testing.T) {
 		"10.200.30.400:80",
 		"10.200.30.401:80",
 	}
-	expectedService := k8s.Service{
+	expectedService := ServiceDef{
 		Addresses: addresses,
 		Name:      translation.FormatServiceName(testNamespace, testServiceName),
 		Paths:     []string{"/apple", "/banana"},
@@ -71,11 +70,11 @@ func TestTranslation_IngressToService(t *testing.T) {
 	actualService, err := translation.IngressToService(&ingress)
 
 	if err != nil {
-		t.Fatalf("error translating networking.Ingress to k8s.Service: %v", err)
+		t.Fatalf("error translating networking.Ingress to k8s.ServiceDef: %v", err)
 	}
 
 	if !ServicesMatch(expectedService, actualService) {
-		t.Fatalf("expected Service to be: %v, got: %v", expectedService, actualService)
+		t.Fatalf("expected ServiceDef to be: %v, got: %v", expectedService, actualService)
 	}
 }
 
@@ -88,7 +87,7 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	testNamespace := "testing-namespace"
 	testServiceName := "test-service"
 	var addresses []string
-	expectedService := k8s.Service{
+	expectedService := ServiceDef{
 		Addresses: addresses,
 		Name:      translation.FormatServiceName(testNamespace, testServiceName),
 		Paths:     []string{"/apple", "/banana"},
@@ -130,10 +129,10 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	actualService, err := translation.IngressToService(&ingress)
 
 	if err != nil {
-		t.Fatalf("error translating networking.Ingress to k8s.Service: %v", err)
+		t.Fatalf("error translating networking.Ingress to k8s.ServiceDef: %v", err)
 	}
 
 	if !ServicesMatch(expectedService, actualService) {
-		t.Fatalf("expected Service to be: %v, got: %v", expectedService, actualService)
+		t.Fatalf("expected ServiceDef to be: %v, got: %v", expectedService, actualService)
 	}
 }

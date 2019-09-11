@@ -1,7 +1,5 @@
 package kong
 
-import "github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
-
 func CompareStringArrays(l []string, r []string) bool {
 	if len(l) != len(r) {
 		return false
@@ -14,7 +12,7 @@ func CompareStringArrays(l []string, r []string) bool {
 	return true
 }
 
-func ServicesMatch(l k8s.Service, r k8s.Service) bool {
+func ServicesMatch(l ServiceDef, r ServiceDef) bool {
 	return l.Name == r.Name &&
 		CompareStringArrays(l.Paths, r.Paths) &&
 		l.Port == r.Port &&

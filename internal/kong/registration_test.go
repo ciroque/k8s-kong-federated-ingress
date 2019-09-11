@@ -2,7 +2,6 @@ package kong
 
 import (
 	"context"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	gokong "github.com/hbagdi/go-kong/kong"
 	"testing"
 )
@@ -34,7 +33,7 @@ func TestRegistration_Register_UpstreamCreated(t *testing.T) {
 	mockClient, _, upstreams := buildMockClient()
 
 	registration, _ := NewRegistration(ClientInterface(mockClient))
-	service := k8s.Service{
+	service := ServiceDef{
 		Addresses: []string{},
 		Name:      "test-service",
 		Paths:     []string{},
@@ -55,7 +54,7 @@ func TestRegistration_Register_ServiceCreated(t *testing.T) {
 	mockClient, services, _ := buildMockClient()
 
 	registration, _ := NewRegistration(ClientInterface(mockClient))
-	service := k8s.Service{
+	service := ServiceDef{
 		Addresses: []string{},
 		Name:      "test-service",
 		Paths:     []string{},

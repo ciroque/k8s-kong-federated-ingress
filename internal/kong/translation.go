@@ -2,13 +2,12 @@ package kong
 
 import (
 	"fmt"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1beta1"
 )
 
 type Translator interface {
-	IngressToService(ingress *networking.Ingress) (k8s.Service, error)
+	IngressToService(ingress *networking.Ingress) (ServiceDef, error)
 }
 
 type Translation struct {
@@ -18,8 +17,8 @@ func (translation *Translation) FormatServiceName(namespace string, service stri
 	return fmt.Sprintf("%s.%s.service", namespace, service)
 }
 
-func (translation *Translation) IngressToService(ingress *networking.Ingress) (k8s.Service, error) {
-	k8sService := new(k8s.Service)
+func (translation *Translation) IngressToService(ingress *networking.Ingress) (ServiceDef, error) {
+	k8sService := new(ServiceDef)
 	var paths []string
 
 	for _, rule := range ingress.Spec.Rules {
