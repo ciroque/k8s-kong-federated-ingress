@@ -8,25 +8,6 @@ import (
 	"testing"
 )
 
-func compareStringArrays(l []string, r []string) bool {
-	if len(l) != len(r) {
-		return false
-	}
-	for i, e := range l {
-		if r[i] != e {
-			return false
-		}
-	}
-	return true
-}
-
-func servicesMatch(l k8s.Service, r k8s.Service) bool {
-	return l.Name == r.Name &&
-		compareStringArrays(l.Paths, r.Paths) &&
-		l.Port == r.Port &&
-		compareStringArrays(l.Addresses, r.Addresses)
-}
-
 func TestTranslation_IngressToService(t *testing.T) {
 	translation := new(Translation)
 	testHost := "test-host"
@@ -93,8 +74,8 @@ func TestTranslation_IngressToService(t *testing.T) {
 		t.Fatalf("error translating networking.Ingress to k8s.Service: %v", err)
 	}
 
-	if !servicesMatch(expectedService, *actualService) {
-		t.Fatalf("expected Service to be: %v, got: %v", expectedService, *actualService)
+	if !ServicesMatch(expectedService, actualService) {
+		t.Fatalf("expected Service to be: %v, got: %v", expectedService, actualService)
 	}
 }
 
@@ -152,7 +133,7 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 		t.Fatalf("error translating networking.Ingress to k8s.Service: %v", err)
 	}
 
-	if !servicesMatch(expectedService, *actualService) {
-		t.Fatalf("expected Service to be: %v, got: %v", expectedService, *actualService)
+	if !ServicesMatch(expectedService, actualService) {
+		t.Fatalf("expected Service to be: %v, got: %v", expectedService, actualService)
 	}
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type Translator interface {
-	IngressToService(ingress *networking.Ingress) (*k8s.Service, error)
+	IngressToService(ingress *networking.Ingress) (k8s.Service, error)
 }
 
 type Translation struct {
@@ -18,7 +18,7 @@ func (translation *Translation) FormatServiceName(namespace string, service stri
 	return fmt.Sprintf("%s.%s.service", namespace, service)
 }
 
-func (translation *Translation) IngressToService(ingress *networking.Ingress) (*k8s.Service, error) {
+func (translation *Translation) IngressToService(ingress *networking.Ingress) (k8s.Service, error) {
 	k8sService := new(k8s.Service)
 	var paths []string
 
@@ -33,7 +33,7 @@ func (translation *Translation) IngressToService(ingress *networking.Ingress) (*
 	k8sService.Paths = paths
 	k8sService.Addresses = buildAddresses(ingress.Status.LoadBalancer.Ingress)
 
-	return k8sService, nil
+	return *k8sService, nil
 }
 
 func buildAddresses(ingresses []v1.LoadBalancerIngress) []string {
