@@ -2,8 +2,10 @@ package kong
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	gokong "github.com/hbagdi/go-kong/kong"
+	"strings"
 	"testing"
 )
 
@@ -17,16 +19,25 @@ type Routes struct {
 	CreateCount *int
 }
 
-func (routes Routes) Create(ctx context.Context, route gokong.Route) (gokong.Route, error) {
+func (routes Routes) Create(context context.Context, route gokong.Route) (gokong.Route, error) {
 	*routes.CreateCount = *routes.CreateCount + 1
 	return route, nil
+}
+
+type FailRoutes struct {
+	CreateCount *int
+}
+
+func (routes FailRoutes) Create(context context.Context, route gokong.Route) (gokong.Route, error) {
+	*routes.CreateCount = *routes.CreateCount + 1
+	return route, errors.New("409 Conflict")
 }
 
 type Services struct {
 	CreateCount *int
 }
 
-func (streams Services) Create(ctx context.Context, service gokong.Service) (gokong.Service, error) {
+func (streams Services) Create(context context.Context, service gokong.Service) (gokong.Service, error) {
 	*streams.CreateCount = *streams.CreateCount + 1
 	return service, nil
 }
@@ -87,6 +98,28 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 	if *routes.CreateCount != expectedCount {
 		t.Fatal(fmt.Sprintf("Expected Routes.Create to have been called %v times. Actual count: %v.", expectedCount, *routes.CreateCount))
 	}
+}
+
+func TestRegistration_Register_CreateRouteFailsToCreateRoute(t *testing.T) {
+	mockClient, _, _, _ := buildMockClient()
+	mockClient.Routes = FailRoutes{CreateCount: new(int)} // Inject a mock that will fail the call
+
+	registration, _ := NewRegistration(ClientInterface(mockClient))
+	serviceDef := buildServiceDef()
+
+	err := registration.Register(serviceDef)
+	if err == nil {
+		t.Fatalf("Register should have failed.")
+	}
+
+	if !strings.Contains(err.Error(), "409") {
+		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
+	}
+
+	//expectedCount := len(serviceDef.Paths)
+	//if *routes.CreateCount != expectedCount {
+	//	t.Fatal(fmt.Sprintf("Expected Routes.Create to have been called %v times. Actual count: %v.", expectedCount, *routes.CreateCount))
+	//}
 }
 
 func buildMockClient() (ClientInterface, Routes, Services, Upstreams) {
