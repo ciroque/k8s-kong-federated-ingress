@@ -41,6 +41,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 	}
 
 	/// Routes
+	/// TODO Route names need to be uniqueified
 	for _, path := range serviceDef.Paths {
 		route, err := buildRoute(kongService, resourceNames, path, false)
 		if err != nil {
@@ -62,6 +63,17 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 
 	/// Targets
 	//serviceDef.Addresses become Targets
+	for _, address := range serviceDef.Addresses {
+		target, err := buildTarget(serviceDef, resourceNames, address)
+		if err != nil {
+			gerr = fmt.Errorf("Registration::Register failed to build Target for address '%s': %v. Previous errors: %v", address, err, gerr)
+		}
+
+		_, err = registration.Kong.Targets.Create(registration.context, target)
+		if err != nil {
+			gerr = fmt.Errorf("Registration::Register failed to create Target for address '%s': %v. Previous errors: %v", address, err, gerr)
+		}
+	}
 
 	return gerr
 }
@@ -113,6 +125,18 @@ func buildService(serviceDef ServiceDef, resourceNames ResourceNames) (gokong.Se
 	}
 
 	return kongService, nil
+}
+
+func buildTarget(serviceDef ServiceDef, names ResourceNames, s string) (gokong.Target, error) {
+	target := gokong.Target{
+		CreatedAt: nil,
+		ID:        nil,
+		Target:    nil,
+		Upstream:  nil,
+		Weight:    nil,
+		Tags:      nil,
+	}
+	return target, nil
 }
 
 /// TODO: Support for Health Checks
