@@ -9,6 +9,9 @@ import (
 	"testing"
 )
 
+/// ********************************************************************************************************************
+/// MOCKS
+
 type MockClient struct {
 	Routes    RoutesInterface
 	Services  ServicesInterface
@@ -42,6 +45,15 @@ func (streams Services) Create(context context.Context, service gokong.Service) 
 	return service, nil
 }
 
+type FailServices struct {
+	CreateCount *int
+}
+
+func (streams FailServices) Create(context context.Context, service gokong.Service) (gokong.Service, error) {
+	*streams.CreateCount = *streams.CreateCount + 1
+	return service, errors.New("409 Conflict")
+}
+
 type Upstreams struct {
 	CreateCount *int
 }
@@ -50,6 +62,9 @@ func (upstreams Upstreams) Create(context context.Context, upstream gokong.Upstr
 	*upstreams.CreateCount = *upstreams.CreateCount + 1
 	return upstream, nil
 }
+
+/// ********************************************************************************************************************
+/// TESTS
 
 func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 	mockClient, _, _, upstreams := buildMockClient()
@@ -79,7 +94,24 @@ func TestRegistration_Register_CreateServiceCalled(t *testing.T) {
 	}
 
 	if *services.CreateCount != 1 {
-		t.Fatal("Expected Routes.Create to have been called once. Actual count: ", *services.CreateCount)
+		t.Fatal("Expected Services.Create to have been called once. Actual count: ", *services.CreateCount)
+	}
+}
+
+func TestRegistration_Register_CreateServiceFails(t *testing.T) {
+	mockClient, _, _, _ := buildMockClient()
+	mockClient.Services = FailServices{CreateCount: new(int)}
+
+	registration, _ := NewRegistration(ClientInterface(mockClient))
+	serviceDef := buildServiceDef()
+
+	err := registration.Register(serviceDef)
+	if err == nil {
+		t.Fatalf("Register should have failed.")
+	}
+
+	if !strings.Contains(err.Error(), "409") {
+		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
 	}
 }
 
@@ -100,7 +132,7 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 	}
 }
 
-func TestRegistration_Register_CreateRouteFailsToCreateRoute(t *testing.T) {
+func TestRegistration_Register_CreateRouteFails(t *testing.T) {
 	mockClient, _, _, _ := buildMockClient()
 	mockClient.Routes = FailRoutes{CreateCount: new(int)} // Inject a mock that will fail the call
 
@@ -115,12 +147,10 @@ func TestRegistration_Register_CreateRouteFailsToCreateRoute(t *testing.T) {
 	if !strings.Contains(err.Error(), "409") {
 		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
 	}
-
-	//expectedCount := len(serviceDef.Paths)
-	//if *routes.CreateCount != expectedCount {
-	//	t.Fatal(fmt.Sprintf("Expected Routes.Create to have been called %v times. Actual count: %v.", expectedCount, *routes.CreateCount))
-	//}
 }
+
+/// ********************************************************************************************************************
+/// HELPERS
 
 func buildMockClient() (ClientInterface, Routes, Services, Upstreams) {
 	routes := Routes{CreateCount: new(int)}
