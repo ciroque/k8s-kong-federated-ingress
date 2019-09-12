@@ -32,7 +32,7 @@ func (translation *Translation) IngressToK8sService(ingress *networking.Ingress)
 		}
 	}
 
-	serviceDef.Namespace = ingress.Namespace // order matters, the next call depends on this being set...
+	serviceDef.Namespace = ingress.Namespace
 	serviceDef.Paths = paths
 	serviceDef.Addresses = buildAddresses(ingress.Status.LoadBalancer.Ingress)
 
