@@ -21,6 +21,7 @@ func TestTranslation_IngressToService(t *testing.T) {
 		Addresses: addresses,
 		Name:      testServiceName,
 		Names: ResourceNames{
+			RouteName:    fmt.Sprintf("%s.%s.route", testNamespace, testServiceName),
 			ServiceName:  fmt.Sprintf("%s.%s.service", testNamespace, testServiceName),
 			UpstreamName: fmt.Sprintf("%s.%s.upstream", testNamespace, testServiceName),
 		},
@@ -93,6 +94,7 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	testNamespace := "testing-namespace"
 	testServiceName := "test-service"
 	resourceNames := ResourceNames{
+		RouteName:    fmt.Sprintf("%s.%s.route", testNamespace, testServiceName),
 		ServiceName:  fmt.Sprintf("%s.%s.service", testNamespace, testServiceName),
 		UpstreamName: fmt.Sprintf("%s.%s.upstream", testNamespace, testServiceName),
 	}
