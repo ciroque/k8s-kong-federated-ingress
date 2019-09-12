@@ -63,11 +63,20 @@ func (upstreams Upstreams) Create(context context.Context, upstream gokong.Upstr
 	return upstream, nil
 }
 
+type FailUpstreams struct {
+	CreateCount *int
+}
+
+func (upstreams FailUpstreams) Create(context context.Context, upstream gokong.Upstream) (gokong.Upstream, error) {
+	*upstreams.CreateCount = *upstreams.CreateCount + 1
+	return upstream, errors.New("409 Conflict")
+}
+
 /// ********************************************************************************************************************
 /// TESTS
 
-func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
-	mockClient, _, _, upstreams := buildMockClient()
+func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
+	mockClient, routes, _, _ := buildMockClient()
 
 	registration, _ := NewRegistration(ClientInterface(mockClient))
 	serviceDef := buildServiceDef()
@@ -77,8 +86,26 @@ func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 		t.Fatalf("Register failed with: %v", err)
 	}
 
-	if *upstreams.CreateCount != 1 {
-		t.Fatal("Expected Upstreams.Create to have been called once. Actual count: ", *upstreams.CreateCount)
+	expectedCount := len(serviceDef.Paths)
+	if *routes.CreateCount != expectedCount {
+		t.Fatal(fmt.Sprintf("Expected Routes.Create to have been called %v times. Actual count: %v.", expectedCount, *routes.CreateCount))
+	}
+}
+
+func TestRegistration_Register_CreateRouteFails(t *testing.T) {
+	mockClient, _, _, _ := buildMockClient()
+	mockClient.Routes = FailRoutes{CreateCount: new(int)} // Inject a mock that will fail the call
+
+	registration, _ := NewRegistration(ClientInterface(mockClient))
+	serviceDef := buildServiceDef()
+
+	err := registration.Register(serviceDef)
+	if err == nil {
+		t.Fatalf("Register should have failed.")
+	}
+
+	if !strings.Contains(err.Error(), "409") {
+		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
 	}
 }
 
@@ -115,8 +142,8 @@ func TestRegistration_Register_CreateServiceFails(t *testing.T) {
 	}
 }
 
-func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
-	mockClient, routes, _, _ := buildMockClient()
+func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
+	mockClient, _, _, upstreams := buildMockClient()
 
 	registration, _ := NewRegistration(ClientInterface(mockClient))
 	serviceDef := buildServiceDef()
@@ -126,15 +153,14 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 		t.Fatalf("Register failed with: %v", err)
 	}
 
-	expectedCount := len(serviceDef.Paths)
-	if *routes.CreateCount != expectedCount {
-		t.Fatal(fmt.Sprintf("Expected Routes.Create to have been called %v times. Actual count: %v.", expectedCount, *routes.CreateCount))
+	if *upstreams.CreateCount != 1 {
+		t.Fatal("Expected Upstreams.Create to have been called once. Actual count: ", *upstreams.CreateCount)
 	}
 }
 
-func TestRegistration_Register_CreateRouteFails(t *testing.T) {
+func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 	mockClient, _, _, _ := buildMockClient()
-	mockClient.Routes = FailRoutes{CreateCount: new(int)} // Inject a mock that will fail the call
+	mockClient.Upstreams = FailUpstreams{CreateCount: new(int)}
 
 	registration, _ := NewRegistration(ClientInterface(mockClient))
 	serviceDef := buildServiceDef()
