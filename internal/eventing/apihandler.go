@@ -15,7 +15,17 @@ type Handler interface {
 	ObjectUpdated(objOld, objNew interface{}) error
 }
 
+type K8s struct {
+	Translator k8s.Translator
+}
+
+type Kong struct {
+	Translator kong.Translator
+}
+
 type ApiHandler struct {
+	K8s        K8s
+	Kong       Kong
 	Translator k8s.Translator
 	Registrar  kong.Registrar
 }
@@ -29,7 +39,7 @@ func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 	log.Info("ApiHandler.ObjectCreated")
 	ingress := obj.(*networking.Ingress)
 
-	service, err := apiHandler.Translator.IngressToK8sService(ingress)
+	service, err := apiHandler.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectCreated: %v", err)
 	}
@@ -41,7 +51,13 @@ func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
 	log.Infof("ApiHandler.ObjectDeleted: %v", obj)
 	ingress := obj.(*networking.Ingress)
 
-	service, err := apiHandler.Translator.IngressToK8sService(ingress)
+	//intermediate, _ := apiHandler.K8s.Translator.IngressToService(ingress)
+	//
+	//kong, err := apiHandler.Kong.Translator.ServiceToKong(intermediate)
+	//
+	//apiHandler.Registrar.Register(kong)
+
+	service, err := apiHandler.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectDeleted: %v", err)
 	}
@@ -54,12 +70,12 @@ func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
 	oldIngress := objOld.(*networking.Ingress)
 	newIngress := objNew.(*networking.Ingress)
 
-	oldService, err := apiHandler.Translator.IngressToK8sService(oldIngress)
+	oldService, err := apiHandler.Translator.IngressToService(oldIngress)
 	if err != nil {
 		return fmt.Errorf("ObjectUpdated error translating oldIngress(%v): %v", oldIngress, err)
 	}
 
-	newService, err := apiHandler.Translator.IngressToK8sService(newIngress)
+	newService, err := apiHandler.Translator.IngressToService(newIngress)
 	if err != nil {
 		return fmt.Errorf("ObjectUpdated error translating newIngress(%v): %v", newIngress, err)
 	}

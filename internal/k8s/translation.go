@@ -14,29 +14,36 @@ type KongServiceDef struct {
 }
 
 type Translator interface {
-	IngressToK8sService(ingress *networking.Ingress) (ServiceDef, error)
+	IngressToService(ingress *networking.Ingress) (ServiceDef, error)
 }
 
 type Translation struct {
 }
 
-func (translation *Translation) IngressToK8sService(ingress *networking.Ingress) (ServiceDef, error) {
-	serviceDef := new(ServiceDef)
-	var paths []string
+func (translation *Translation) IngressToService(ingress *networking.Ingress) (ServicesMap, error) {
+	servicesMap := make(map[string]ServiceDef)
+
+	ingressAddresses := buildAddresses(ingress.Status.LoadBalancer.Ingress)
 
 	for _, rule := range ingress.Spec.Rules {
 		for _, path := range rule.HTTP.Paths {
-			serviceDef.Name = path.Backend.ServiceName // This is a problem if there are multiple paths pointing to different services...
-			serviceDef.Port = int(path.Backend.ServicePort.IntVal)
-			paths = append(paths, path.Path)
+			serviceName := path.Backend.ServiceName
+			serviceDef, found := servicesMap[serviceName]
+			if !found {
+				servicesMap[serviceName] = ServiceDef{
+					Addresses: ingressAddresses,
+					Name:      serviceName,
+					Namespace: ingress.Namespace,
+					Paths:     []string{path.Path},
+					Port:      int(path.Backend.ServicePort.IntVal),
+				}
+			} else {
+				serviceDef.Paths = append(serviceDef.Paths, path.Path)
+			}
 		}
 	}
 
-	serviceDef.Namespace = ingress.Namespace
-	serviceDef.Paths = paths
-	serviceDef.Addresses = buildAddresses(ingress.Status.LoadBalancer.Ingress)
-
-	return *serviceDef, nil
+	return servicesMap, nil
 }
 
 func buildAddresses(ingresses []v1.LoadBalancerIngress) []string {

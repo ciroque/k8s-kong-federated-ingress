@@ -110,8 +110,8 @@ func main() {
 		Informer:  informer,
 		Queue:     eventQueue,
 		Handler: eventing.ApiHandler{
-			Translator: &k8s.Translation{},
-			Registrar:  &kong.Registration{}, /// TODO: Create a go-kong.Client and pass it in...
+			K8sTranslator: &k8s.Translation{},
+			Registrar:     &kong.Registration{}, /// TODO: Create a go-kong.Client and pass it in...
 		},
 	}
 

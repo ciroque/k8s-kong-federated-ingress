@@ -34,11 +34,11 @@ func (registration *Registration) Register(serviceDef k8s.ServiceDef) error {
 
 	var gerr error
 
-	/// Service
+	/// ServicesMap
 	kongService, _ := buildService(serviceDef, resourceNames)
 	_, err := registration.Kong.Services.Create(registration.context, kongService)
 	if err != nil {
-		return fmt.Errorf("Registration::Register failed to create the Service: %v", err)
+		return fmt.Errorf("Registration::Register failed to create the ServicesMap: %v", err)
 	}
 
 	/// Routes

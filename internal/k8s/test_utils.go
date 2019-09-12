@@ -1,20 +1,35 @@
 package k8s
 
-func CompareStringArrays(l []string, r []string) bool {
-	if len(l) != len(r) {
+import "reflect"
+
+func CompareStringArrays(expected []string, actual []string) bool {
+	if len(expected) != len(actual) {
 		return false
 	}
-	for i, e := range l {
-		if r[i] != e {
+	for i, e := range expected {
+		if actual[i] != e {
 			return false
 		}
 	}
 	return true
 }
 
-func ServicesMatch(l ServiceDef, r ServiceDef) bool {
-	return l.Name == r.Name &&
-		CompareStringArrays(l.Paths, r.Paths) &&
-		l.Port == r.Port &&
-		CompareStringArrays(l.Addresses, r.Addresses)
+func ServicesMatch(expected ServiceDef, actual ServiceDef) bool {
+	return expected.Name == actual.Name &&
+		CompareStringArrays(expected.Paths, actual.Paths) &&
+		expected.Port == actual.Port &&
+		CompareStringArrays(expected.Addresses, actual.Addresses)
+}
+
+func ServicesMapMatch(expected map[string]ServiceDef, actual map[string]ServiceDef) bool {
+	//for serviceName, leftServiceDef := range expected {
+	//	rightServiceDef, found := actual[serviceName]
+	//	if !found || !ServicesMatch(leftServiceDef, rightServiceDef) {
+	//		return false
+	//	}
+	//}
+	//
+	//actual.
+
+	return reflect.DeepEqual(expected, actual)
 }
