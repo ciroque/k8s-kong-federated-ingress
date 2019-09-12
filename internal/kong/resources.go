@@ -1,16 +1,15 @@
+/*
+
+	DEPRECATING THIS ; THE NEW HOTNESS IS Translation / Registration implementation
+
+*/
+
 package kong
 
 import (
 	"fmt"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 )
-
-type ServiceDef struct {
-	Service  string
-	Routes   []string
-	Upstream string
-	Targets  []string
-}
 
 /// TODO DEPRECATE THIS
 type ResourceNames struct {

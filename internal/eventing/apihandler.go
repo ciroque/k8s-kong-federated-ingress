@@ -16,8 +16,8 @@ type Handler interface {
 }
 
 type ApiHandler struct {
-	Translator k8s.Translator /// STEVE: This can be mocked for tests
-	Registrar  kong.Registrar /// STEVE: This can be mocked for tests
+	Translator k8s.Translator
+	Registrar  kong.Registrar
 }
 
 func (apiHandler *ApiHandler) Init() error {
