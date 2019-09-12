@@ -10,6 +10,7 @@ package main
 
 import (
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/eventing"
+	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/kong"
 	"os"
 	"os/signal"
@@ -109,7 +110,7 @@ func main() {
 		Informer:  informer,
 		Queue:     eventQueue,
 		Handler: eventing.ApiHandler{
-			Translator: &kong.Translation{},
+			Translator: &k8s.Translation{},
 			Registrar:  &kong.Registration{}, /// TODO: Create a go-kong.Client and pass it in...
 		},
 	}

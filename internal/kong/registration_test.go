@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	gokong "github.com/hbagdi/go-kong/kong"
 	"strings"
 	"testing"
@@ -246,8 +247,8 @@ func buildMockClient() (ClientInterface, Routes, Services, Targets, Upstreams) {
 	return ClientInterface(mockClient), routes, services, targets, upstreams
 }
 
-func buildServiceDef() ServiceDef {
-	serviceDef := ServiceDef{
+func buildServiceDef() k8s.ServiceDef {
+	serviceDef := k8s.ServiceDef{
 		Addresses: []string{
 			"10.100.100.10",
 			"10.100.100.11",

@@ -1,4 +1,4 @@
-package kong
+package k8s
 
 import (
 	"fmt"
@@ -6,14 +6,21 @@ import (
 	networking "k8s.io/api/networking/v1beta1"
 )
 
+type KongServiceDef struct {
+	Service  string
+	Routes   []string
+	Upstream string
+	Targets  []string
+}
+
 type Translator interface {
-	IngressToService(ingress *networking.Ingress) (ServiceDef, error)
+	IngressToK8sService(ingress *networking.Ingress) (ServiceDef, error)
 }
 
 type Translation struct {
 }
 
-func (translation *Translation) IngressToService(ingress *networking.Ingress) (ServiceDef, error) {
+func (translation *Translation) IngressToK8sService(ingress *networking.Ingress) (ServiceDef, error) {
 	serviceDef := new(ServiceDef)
 	var paths []string
 
@@ -26,7 +33,6 @@ func (translation *Translation) IngressToService(ingress *networking.Ingress) (S
 	}
 
 	serviceDef.Namespace = ingress.Namespace // order matters, the next call depends on this being set...
-	serviceDef.Names = NewResourceNames(*serviceDef)
 	serviceDef.Paths = paths
 	serviceDef.Addresses = buildAddresses(ingress.Status.LoadBalancer.Ingress)
 

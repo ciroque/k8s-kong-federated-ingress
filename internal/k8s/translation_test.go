@@ -1,7 +1,6 @@
-package kong
+package k8s
 
 import (
-	"fmt"
 	v1 "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -20,11 +19,6 @@ func TestTranslation_IngressToService(t *testing.T) {
 	expectedService := ServiceDef{
 		Addresses: addresses,
 		Name:      testServiceName,
-		Names: ResourceNames{
-			RouteName:    fmt.Sprintf("%s.%s.route", testNamespace, testServiceName),
-			ServiceName:  fmt.Sprintf("%s.%s.service", testNamespace, testServiceName),
-			UpstreamName: fmt.Sprintf("%s.%s.upstream", testNamespace, testServiceName),
-		},
 		Namespace: testNamespace,
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
@@ -74,14 +68,14 @@ func TestTranslation_IngressToService(t *testing.T) {
 		},
 	}
 	ingress.Namespace = testNamespace
-	actualService, err := translation.IngressToService(&ingress)
+	actualService, err := translation.IngressToK8sService(&ingress)
 
 	if err != nil {
-		t.Fatalf("error translating networking.Ingress to k8s.ServiceDef: %v", err)
+		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
 	}
 
 	if !ServicesMatch(expectedService, actualService) {
-		t.Fatalf("expected ServiceDef to be:\n\t%v\n, got:\n\t%v", expectedService, actualService)
+		t.Fatalf("expected K8sServiceDef to be:\n\t%v\n, got:\n\t%v", expectedService, actualService)
 	}
 }
 
@@ -93,16 +87,10 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	testHost := "test-host"
 	testNamespace := "testing-namespace"
 	testServiceName := "test-service"
-	resourceNames := ResourceNames{
-		RouteName:    fmt.Sprintf("%s.%s.route", testNamespace, testServiceName),
-		ServiceName:  fmt.Sprintf("%s.%s.service", testNamespace, testServiceName),
-		UpstreamName: fmt.Sprintf("%s.%s.upstream", testNamespace, testServiceName),
-	}
 	var addresses []string
 	expectedService := ServiceDef{
 		Addresses: addresses,
 		Name:      testServiceName,
-		Names:     resourceNames,
 		Namespace: testNamespace,
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
@@ -140,13 +128,13 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 		},
 	}
 	ingress.Namespace = testNamespace
-	actualService, err := translation.IngressToService(&ingress)
+	actualService, err := translation.IngressToK8sService(&ingress)
 
 	if err != nil {
-		t.Fatalf("error translating networking.Ingress to k8s.ServiceDef: %v", err)
+		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
 	}
 
 	if !ServicesMatch(expectedService, actualService) {
-		t.Fatalf("expected ServiceDef to be:\n\t%v,\ngot:\n\t%v", expectedService, actualService)
+		t.Fatalf("expected K8sServiceDef to be:\n\t%v,\ngot:\n\t%v", expectedService, actualService)
 	}
 }

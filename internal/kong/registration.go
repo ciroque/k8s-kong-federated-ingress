@@ -3,13 +3,14 @@ package kong
 import (
 	"context"
 	"fmt"
+	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	gokong "github.com/hbagdi/go-kong/kong"
 )
 
 type Registrar interface {
-	Register(service ServiceDef) error
-	Deregister(service ServiceDef) error
-	Modify(prevService ServiceDef, newService ServiceDef) error
+	Register(service k8s.ServiceDef) error
+	Deregister(service k8s.ServiceDef) error
+	Modify(prevService k8s.ServiceDef, newService k8s.ServiceDef) error
 }
 
 type Registration struct {
@@ -24,11 +25,11 @@ func NewRegistration(kongClient ClientInterface) (Registration, error) {
 	return *registration, nil
 }
 
-func (registration *Registration) Deregister(service ServiceDef) error {
+func (registration *Registration) Deregister(service k8s.ServiceDef) error {
 	return nil
 }
 
-func (registration *Registration) Register(serviceDef ServiceDef) error {
+func (registration *Registration) Register(serviceDef k8s.ServiceDef) error {
 	resourceNames := NewResourceNames(serviceDef)
 
 	var gerr error
@@ -78,7 +79,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 	return gerr
 }
 
-func (registration *Registration) Modify(prevService ServiceDef, newService ServiceDef) error {
+func (registration *Registration) Modify(prevService k8s.ServiceDef, newService k8s.ServiceDef) error {
 	return nil
 }
 
@@ -106,7 +107,7 @@ func buildRoute(service gokong.Service, resourceNames ResourceNames, path string
 	return kongRoute, nil
 }
 
-func buildService(serviceDef ServiceDef, resourceNames ResourceNames) (gokong.Service, error) {
+func buildService(serviceDef k8s.ServiceDef, resourceNames ResourceNames) (gokong.Service, error) {
 	kongService := gokong.Service{
 		ClientCertificate: nil,
 		ConnectTimeout:    nil,
@@ -127,7 +128,7 @@ func buildService(serviceDef ServiceDef, resourceNames ResourceNames) (gokong.Se
 	return kongService, nil
 }
 
-func buildTarget(serviceDef ServiceDef, names ResourceNames, s string) (gokong.Target, error) {
+func buildTarget(serviceDef k8s.ServiceDef, names ResourceNames, s string) (gokong.Target, error) {
 	target := gokong.Target{
 		CreatedAt: nil,
 		ID:        nil,
@@ -140,7 +141,7 @@ func buildTarget(serviceDef ServiceDef, names ResourceNames, s string) (gokong.T
 }
 
 /// TODO: Support for Health Checks
-func buildUpstream(_ ServiceDef, resourceNames ResourceNames) (gokong.Upstream, error) {
+func buildUpstream(_ k8s.ServiceDef, resourceNames ResourceNames) (gokong.Upstream, error) {
 	upstream := gokong.Upstream{
 		ID:                 nil,
 		Name:               &resourceNames.UpstreamName,
