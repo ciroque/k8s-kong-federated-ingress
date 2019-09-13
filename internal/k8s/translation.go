@@ -39,6 +39,7 @@ func (translation *Translation) IngressToService(ingress *networking.Ingress) (S
 				}
 			} else {
 				serviceDef.Paths = append(serviceDef.Paths, path.Path)
+				servicesMap[serviceName] = serviceDef
 			}
 		}
 	}

@@ -12,39 +12,27 @@ func TestTranslation_IngressToService(t *testing.T) {
 	testHost := "test-host"
 	testNamespace := "testing-namespace"
 	testServiceName := "test-service"
-	addresses := []string{
-		"10.200.30.400:80",
-		"10.200.30.401:80",
-	}
-
-	expectedServiceMap := ServicesMap{
-		testServiceName: ServiceDef{
-			Addresses: addresses,
-			Name:      testServiceName,
-			Namespace: testNamespace,
-			Paths:     []string{"/apple", "/banana"},
-			Port:      80,
-		},
-	}
-
 	expectedService := ServiceDef{
-		Addresses: addresses,
+		Addresses: []string{
+			"10.200.30.400:80",
+			"10.200.30.401:80",
+		},
 		Name:      testServiceName,
 		Namespace: testNamespace,
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
 	}
 
+	expectedServiceMap := ServicesMap{
+		testServiceName: expectedService,
+	}
+
 	ingress := networking.Ingress{
 		Status: networking.IngressStatus{
 			LoadBalancer: v1.LoadBalancerStatus{
 				Ingress: []v1.LoadBalancerIngress{
-					{
-						IP: "10.200.30.400",
-					},
-					{
-						IP: "10.200.30.401",
-					},
+					{IP: "10.200.30.400"},
+					{IP: "10.200.30.401"},
 				},
 			},
 		},
@@ -101,22 +89,25 @@ func TestTranslation_IngressToServiceDef_MultipleServicesInRules(t *testing.T) {
 		"10.200.30.401:80",
 	}
 
-	expectedServiceMap := ServicesMap{
-		testServiceName1: ServiceDef{
-			Addresses: addresses,
-			Name:      testServiceName1,
-			Namespace: testNamespace,
-			Paths:     []string{"/apple", "/banana"},
-			Port:      80,
-		},
-	}
-
-	expectedService := ServiceDef{
+	expectedService1 := ServiceDef{
 		Addresses: addresses,
 		Name:      testServiceName1,
 		Namespace: testNamespace,
-		Paths:     []string{"/apple", "/banana"},
+		Paths:     []string{"/apple"},
 		Port:      80,
+	}
+
+	expectedService2 := ServiceDef{
+		Addresses: addresses,
+		Name:      testServiceName2,
+		Namespace: testNamespace,
+		Paths:     []string{"/apple"},
+		Port:      80,
+	}
+
+	expectedServiceMap := ServicesMap{
+		testServiceName1: expectedService1,
+		testServiceName2: expectedService2,
 	}
 
 	ingress := networking.Ingress{
@@ -142,17 +133,17 @@ func TestTranslation_IngressToServiceDef_MultipleServicesInRules(t *testing.T) {
 						HTTP: &networking.HTTPIngressRuleValue{
 							Paths: []networking.HTTPIngressPath{
 								{
-									Path: expectedService.Paths[0],
+									Path: expectedService1.Paths[0],
 									Backend: networking.IngressBackend{
 										ServiceName: testServiceName1,
-										ServicePort: intstr.IntOrString{IntVal: int32(expectedService.Port)},
+										ServicePort: intstr.IntOrString{IntVal: int32(expectedService1.Port)},
 									},
 								},
 								{
-									Path: expectedService.Paths[1],
+									Path: expectedService2.Paths[0],
 									Backend: networking.IngressBackend{
 										ServiceName: testServiceName2,
-										ServicePort: intstr.IntOrString{IntVal: int32(expectedService.Port)},
+										ServicePort: intstr.IntOrString{IntVal: int32(expectedService2.Port)},
 									},
 								},
 							},
@@ -163,14 +154,14 @@ func TestTranslation_IngressToServiceDef_MultipleServicesInRules(t *testing.T) {
 		},
 	}
 	ingress.Namespace = testNamespace
-	actualService, err := translation.IngressToService(&ingress)
+	actualServiceMap, err := translation.IngressToService(&ingress)
 
 	if err != nil {
 		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
 	}
 
-	if !ServicesMapMatch(expectedServiceMap, actualService) {
-		t.Fatalf("expected K8sServiceDef to be:\n\t%v\n, got:\n\t%v", expectedService, actualService)
+	if !ServicesMapMatch(expectedServiceMap, actualServiceMap) {
+		t.Fatalf("expected K8sServiceDef to be:\n\t%v\n, got:\n\t%v", expectedServiceMap, actualServiceMap)
 	}
 }
 
@@ -229,7 +220,7 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
 	}
 
-	if !ServicesMatch(expectedService, actualService) {
+	if !ServicesMatch(expectedService, actualService[testServiceName]) {
 		t.Fatalf("expected K8sServiceDef to be:\n\t%v,\ngot:\n\t%v", expectedService, actualService)
 	}
 }
