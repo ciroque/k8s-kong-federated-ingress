@@ -1,8 +1,8 @@
 package kong
 
-type ServiceDef struct {
-	Service  string
-	Routes   []string
-	Upstream string
-	Targets  []string
+type KongServiceDef struct {
+	ServiceName  string
+	Routes       []string
+	UpstreamName string
+	Targets      []string
 }

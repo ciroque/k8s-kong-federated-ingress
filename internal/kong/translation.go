@@ -5,5 +5,12 @@ import (
 )
 
 type Translator interface {
-	ServiceToKong(service k8s.ServicesMap) (ServiceDef, error)
+	ServiceToKong(serviceName string, service k8s.ServiceDef) (KongServiceDef, error)
+}
+
+type Translation struct {
+}
+
+func (translation *Translation) ServiceToKong(serviceName string, service k8s.ServiceDef) (KongServiceDef, error) {
+	return KongServiceDef{}, nil
 }

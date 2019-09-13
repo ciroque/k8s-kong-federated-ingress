@@ -55,7 +55,7 @@ func (registration *Registration) Register(serviceDef k8s.ServiceDef) error {
 		}
 	}
 
-	/// Upstream
+	/// UpstreamName
 	upstream, _ := buildUpstream(serviceDef, resourceNames)
 	_, err = registration.Kong.Upstreams.Create(registration.context, upstream)
 	if err != nil {
@@ -116,7 +116,7 @@ func buildService(serviceDef k8s.ServiceDef, resourceNames ResourceNames) (gokon
 		ID:                nil,
 		Name:              &resourceNames.ServiceName,
 		Path:              nil,
-		Port:              &serviceDef.Port,
+		Port:              nil,
 		Protocol:          nil,
 		ReadTimeout:       nil,
 		Retries:           nil,

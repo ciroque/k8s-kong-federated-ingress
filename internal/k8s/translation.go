@@ -27,7 +27,6 @@ func (translation *Translation) IngressToService(ingress *networking.Ingress) (S
 					Addresses: ingressAddresses,
 					Namespace: ingress.Namespace,
 					Paths:     []string{path.Path},
-					Port:      int(path.Backend.ServicePort.IntVal),
 				}
 			} else {
 				serviceDef.Paths = append(serviceDef.Paths, path.Path)

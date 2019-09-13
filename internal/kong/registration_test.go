@@ -256,13 +256,11 @@ func buildServiceDef() k8s.ServiceDef {
 			"10.100.100.13",
 			"10.100.100.14",
 		},
-		Name: "test-service",
 		Paths: []string{
 			"/apples",
 			"/bananas",
 			"/oranges",
 		},
-		Port: 8080,
 	}
 	serviceDef.Namespace = "test-namespace"
 	return serviceDef
