@@ -17,7 +17,6 @@ func TestTranslation_IngressToService(t *testing.T) {
 			"10.200.30.400:80",
 			"10.200.30.401:80",
 		},
-		Name:      testServiceName,
 		Namespace: testNamespace,
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
@@ -91,7 +90,6 @@ func TestTranslation_IngressToServiceDef_MultipleServicesInRules(t *testing.T) {
 
 	expectedService1 := ServiceDef{
 		Addresses: addresses,
-		Name:      testServiceName1,
 		Namespace: testNamespace,
 		Paths:     []string{"/apple"},
 		Port:      80,
@@ -99,7 +97,6 @@ func TestTranslation_IngressToServiceDef_MultipleServicesInRules(t *testing.T) {
 
 	expectedService2 := ServiceDef{
 		Addresses: addresses,
-		Name:      testServiceName2,
 		Namespace: testNamespace,
 		Paths:     []string{"/apple"},
 		Port:      80,
@@ -176,7 +173,6 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	var addresses []string
 	expectedService := ServiceDef{
 		Addresses: addresses,
-		Name:      testServiceName,
 		Namespace: testNamespace,
 		Paths:     []string{"/apple", "/banana"},
 		Port:      80,
@@ -214,13 +210,13 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 		},
 	}
 	ingress.Namespace = testNamespace
-	actualService, err := translation.IngressToService(&ingress)
+	actualServiceMap, err := translation.IngressToService(&ingress)
 
 	if err != nil {
 		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
 	}
 
-	if !ServicesMatch(expectedService, actualService[testServiceName]) {
-		t.Fatalf("expected K8sServiceDef to be:\n\t%v,\ngot:\n\t%v", expectedService, actualService)
+	if !ServicesMatch(expectedService, actualServiceMap[testServiceName]) {
+		t.Fatalf("expected K8sServiceDef to be:\n\t%v,\ngot:\n\t%v", expectedService, actualServiceMap[testServiceName])
 	}
 }

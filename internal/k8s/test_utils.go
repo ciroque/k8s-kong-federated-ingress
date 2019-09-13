@@ -15,10 +15,7 @@ func CompareStringArrays(expected []string, actual []string) bool {
 }
 
 func ServicesMatch(expected ServiceDef, actual ServiceDef) bool {
-	return expected.Name == actual.Name &&
-		CompareStringArrays(expected.Paths, actual.Paths) &&
-		expected.Port == actual.Port &&
-		CompareStringArrays(expected.Addresses, actual.Addresses)
+	return reflect.DeepEqual(expected, actual)
 }
 
 func ServicesMapMatch(expected map[string]ServiceDef, actual map[string]ServiceDef) bool {

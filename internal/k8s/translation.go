@@ -6,13 +6,6 @@ import (
 	networking "k8s.io/api/networking/v1beta1"
 )
 
-type KongServiceDef struct {
-	Service  string
-	Routes   []string
-	Upstream string
-	Targets  []string
-}
-
 type Translator interface {
 	IngressToService(ingress *networking.Ingress) (ServiceDef, error)
 }
@@ -32,7 +25,6 @@ func (translation *Translation) IngressToService(ingress *networking.Ingress) (S
 			if !found {
 				servicesMap[serviceName] = ServiceDef{
 					Addresses: ingressAddresses,
-					Name:      serviceName,
 					Namespace: ingress.Namespace,
 					Paths:     []string{path.Path},
 					Port:      int(path.Backend.ServicePort.IntVal),
