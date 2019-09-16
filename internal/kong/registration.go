@@ -7,9 +7,9 @@ import (
 )
 
 type Registrar interface {
-	Register(service KongServiceDef) error
-	Deregister(service KongServiceDef) error
-	Modify(prevService KongServiceDef, newService KongServiceDef) error
+	Register(service ServiceDef) error
+	Deregister(service ServiceDef) error
+	Modify(prevService ServiceDef, newService ServiceDef) error
 }
 
 type Registration struct {
@@ -24,11 +24,11 @@ func NewRegistration(kongClient ClientInterface) (Registration, error) {
 	return *registration, nil
 }
 
-func (registration *Registration) Deregister(service KongServiceDef) error {
+func (registration *Registration) Deregister(service ServiceDef) error {
 	return nil
 }
 
-func (registration *Registration) Register(serviceDef KongServiceDef) error {
+func (registration *Registration) Register(serviceDef ServiceDef) error {
 
 	var gerr error
 
@@ -72,7 +72,7 @@ func (registration *Registration) Register(serviceDef KongServiceDef) error {
 	return gerr
 }
 
-func (registration *Registration) Modify(prevService KongServiceDef, newService KongServiceDef) error {
+func (registration *Registration) Modify(prevService ServiceDef, newService ServiceDef) error {
 	return nil
 }
 
@@ -105,7 +105,7 @@ func buildRoute(service gokong.Service, routeName string, path string, stripPath
 	return kongRoute, nil
 }
 
-func buildService(serviceDef KongServiceDef) (gokong.Service, error) {
+func buildService(serviceDef ServiceDef) (gokong.Service, error) {
 	kongService := gokong.Service{
 		ClientCertificate: nil,
 		ConnectTimeout:    nil,
@@ -139,7 +139,7 @@ func buildTarget(upstream string, targetAddress string) (gokong.Target, error) {
 }
 
 /// TODO: Support for Health Checks
-func buildUpstream(serviceDef KongServiceDef) (gokong.Upstream, error) {
+func buildUpstream(serviceDef ServiceDef) (gokong.Upstream, error) {
 	upstream := gokong.Upstream{
 		ID:                 nil,
 		Name:               &serviceDef.UpstreamName,

@@ -6,7 +6,7 @@
 
 	- Registration implements the logic to manage the resources within Kong.
 
-	- KongServiceDef represents the mapping of resources towards the Kong representation.
+	- ServiceDef represents the mapping of resources towards the Kong representation.
 
 */
 package kong

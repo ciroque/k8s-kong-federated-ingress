@@ -5,14 +5,14 @@ import (
 )
 
 type Translator interface {
-	ServiceToKong(serviceName string, service k8s.ServiceDef) (KongServiceDef, error)
+	ServiceToKong(serviceName string, service k8s.ServiceDef) (ServiceDef, error)
 }
 
 type Translation struct {
 }
 
-func (translation *Translation) ServiceToKong(serviceName string, service k8s.ServiceDef) (KongServiceDef, error) {
-	kongServiceDef := KongServiceDef{
+func (translation *Translation) ServiceToKong(serviceName string, service k8s.ServiceDef) (ServiceDef, error) {
+	kongServiceDef := ServiceDef{
 		ServiceName:  service.Namespace + "-" + serviceName + ".service",
 		Routes:       service.Paths,
 		UpstreamName: service.Namespace + "-" + serviceName + ".upstream",

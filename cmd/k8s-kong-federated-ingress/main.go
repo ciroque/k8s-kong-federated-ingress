@@ -104,14 +104,23 @@ func main() {
 	// construct the Controller object which has all of the necessary components to
 	// handle logging, connections, informing (listing and watching), the queue,
 	// and the handler
+
+	eventingK8s := eventing.K8s{Translator: &k8s.Translation{}}
+	eventingKong := eventing.Kong{
+		Registrar: &kong.Registration{
+			Kong: kong.ClientInterface{}, /// TODOL Give this a real go-kong.Client with initialization and e'ytang
+		},
+		Translator: &kong.Translation{},
+	}
+
 	controller := eventing.Controller{
 		Logger:    log.NewEntry(log.New()),
 		Clientset: client,
 		Informer:  informer,
 		Queue:     eventQueue,
 		Handler: eventing.ApiHandler{
-			Translator: &k8s.Translation{},
-			Registrar:  &kong.Registration{}, /// TODO: Create a go-kong.Client and pass it in...
+			K8s:  eventingK8s,
+			Kong: eventingKong,
 		},
 	}
 

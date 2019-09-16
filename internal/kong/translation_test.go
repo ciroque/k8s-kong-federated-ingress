@@ -20,7 +20,7 @@ func TestTranslation_K8sServiceToKongService(t *testing.T) {
 		Paths:     []string{"/apple", "/banana"},
 	}
 
-	expectedKongServiceDef := KongServiceDef{
+	expectedKongServiceDef := ServiceDef{
 		ServiceName:  serviceDef.Namespace + "-" + serviceName + ".service",
 		Routes:       serviceDef.Paths,
 		UpstreamName: serviceDef.Namespace + "-" + serviceName + ".upstream",
@@ -30,7 +30,7 @@ func TestTranslation_K8sServiceToKongService(t *testing.T) {
 	actualKongServiceDef, err := translation.ServiceToKong(serviceName, serviceDef)
 
 	if err != nil {
-		t.Fatalf("error translating k8s.K8sServiceDef to kong.KongServiceDef: %v", err)
+		t.Fatalf("error translating k8s.K8sServiceDef to kong.ServiceDef: %v", err)
 	}
 
 	if !reflect.DeepEqual(expectedKongServiceDef, actualKongServiceDef) {

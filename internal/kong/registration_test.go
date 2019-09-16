@@ -273,8 +273,8 @@ func buildMockClient() (ClientInterface, Routes, Services, Targets, Upstreams) {
 	return ClientInterface(mockClient), routes, services, targets, upstreams
 }
 
-func buildExampleServiceDef() KongServiceDef {
-	serviceDef := KongServiceDef{
+func buildExampleServiceDef() ServiceDef {
+	serviceDef := ServiceDef{
 		ServiceName: "test-service.service",
 		Routes: []string{
 			"10.100.100.10",
