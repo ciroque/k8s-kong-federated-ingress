@@ -12,5 +12,11 @@ type Translation struct {
 }
 
 func (translation *Translation) ServiceToKong(serviceName string, service k8s.ServiceDef) (KongServiceDef, error) {
-	return KongServiceDef{}, nil
+	kongServiceDef := KongServiceDef{
+		ServiceName:  service.Namespace + "-" + serviceName + ".service",
+		Routes:       service.Paths,
+		UpstreamName: service.Namespace + "-" + serviceName + ".upstream",
+		Targets:      service.Addresses,
+	}
+	return kongServiceDef, nil
 }
