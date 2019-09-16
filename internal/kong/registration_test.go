@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	gokong "github.com/hbagdi/go-kong/kong"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -20,11 +21,11 @@ type MockClient struct {
 }
 
 type Routes struct {
-	createdRoute *gokong.Route
+	createdRoutes *[]gokong.Route
 }
 
 func (routes Routes) Create(context context.Context, route gokong.Route) (gokong.Route, error) {
-	routes.createdRoute = &route
+	*routes.createdRoutes = append(*routes.createdRoutes, route)
 	return route, nil
 }
 
@@ -39,10 +40,12 @@ func (routes FailRoutes) Create(context context.Context, route gokong.Route) (go
 
 type Services struct {
 	CreateCount *int
+	Service     *gokong.Service
 }
 
-func (streams Services) Create(context context.Context, service gokong.Service) (gokong.Service, error) {
-	*streams.CreateCount = *streams.CreateCount + 1
+func (services Services) Create(context context.Context, service gokong.Service) (gokong.Service, error) {
+	*services.CreateCount = *services.CreateCount + 1
+	*services.Service = service
 	return service, nil
 }
 
@@ -95,7 +98,7 @@ func (upstreams FailUpstreams) Create(context context.Context, upstream gokong.U
 /// TESTS
 
 func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
-	mockClient, _, _, _, _ := buildMockClient()
+	mockClient, routes, service, _, _ := buildMockClient()
 
 	registration, _ := NewRegistration(ClientInterface(mockClient))
 	serviceDef := buildExampleServiceDef()
@@ -105,10 +108,28 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 		t.Fatalf("Register failed with: %v", err)
 	}
 
-	//expectedCount := len(serviceDef.Routes)
-	//if *routes.CreateCount != expectedCount {
-	//	t.Fatal(fmt.Sprintf("Expected Routes.Create to have been called %v times. Actual count: %v.", expectedCount, *routes.CreateCount))
-	//}
+	routeName1 := "foo"
+	routeName2 := "foo"
+	stripPath := false
+
+	expectedRoutes := []gokong.Route{
+		gokong.Route{
+			Name:      &routeName1,
+			Paths:     gokong.StringSlice(serviceDef.Routes[0]),
+			Service:   service.Service,
+			StripPath: &stripPath,
+		},
+		gokong.Route{
+			Name:      &routeName2,
+			Paths:     gokong.StringSlice(serviceDef.Routes[1]),
+			Service:   service.Service,
+			StripPath: &stripPath,
+		},
+	}
+
+	if !reflect.DeepEqual(expectedRoutes, *routes.createdRoutes) {
+		t.Fatal(fmt.Sprintf("Expected Routes.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedRoutes, *routes.createdRoutes))
+	}
 }
 
 func TestRegistration_Register_CreateRouteFails(t *testing.T) {
@@ -232,8 +253,14 @@ func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 /// HELPERS
 
 func buildMockClient() (ClientInterface, Routes, Services, Targets, Upstreams) {
-	routes := Routes{createdRoute: nil}
-	services := Services{CreateCount: new(int)}
+	array := []gokong.Route{}
+	//var arr []gokong.Route
+
+	routes := Routes{createdRoutes: &array}
+	services := Services{
+		CreateCount: new(int),
+		Service:     new(gokong.Service),
+	}
 	targets := Targets{CreateCount: new(int)}
 	upstreams := Upstreams{CreateCount: new(int)}
 
@@ -252,9 +279,6 @@ func buildExampleServiceDef() KongServiceDef {
 		Routes: []string{
 			"10.100.100.10",
 			"10.100.100.11",
-			"10.100.100.12",
-			"10.100.100.13",
-			"10.100.100.14",
 		},
 		UpstreamName: "test-service.upstream",
 		Targets: []string{

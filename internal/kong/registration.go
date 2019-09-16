@@ -32,14 +32,12 @@ func (registration *Registration) Register(serviceDef KongServiceDef) error {
 
 	var gerr error
 
-	/// ServicesMap
 	kongService, _ := buildService(serviceDef)
 	_, err := registration.Kong.Services.Create(registration.context, kongService)
 	if err != nil {
 		return fmt.Errorf("Registration::Register failed to create the ServicesMap: %v", err)
 	}
 
-	/// Routes
 	for _, path := range serviceDef.Routes {
 		routeName := buildRouteName(serviceDef.ServiceName, path)
 		route, err := buildRoute(kongService, routeName, path, false)
@@ -53,15 +51,12 @@ func (registration *Registration) Register(serviceDef KongServiceDef) error {
 		}
 	}
 
-	/// UpstreamName
 	upstream, _ := buildUpstream(serviceDef)
 	_, err = registration.Kong.Upstreams.Create(registration.context, upstream)
 	if err != nil {
 		return fmt.Errorf("Registration::Register failed to create Upstream: %v. Previous errors: %v", err, gerr)
 	}
 
-	/// Targets
-	//serviceDef.Addresses become Targets
 	for _, targetAddress := range serviceDef.Targets {
 		target, err := buildTarget("upstreamTBD", targetAddress)
 		if err != nil {
