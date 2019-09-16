@@ -2,7 +2,7 @@ package kong
 
 type ServiceDef struct {
 	ServiceName  string
-	Routes       []string
+	RoutesMap    map[string]string
 	UpstreamName string
 	Targets      []string
 }

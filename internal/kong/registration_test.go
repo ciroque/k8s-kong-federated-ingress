@@ -108,20 +108,25 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 		t.Fatalf("Register failed with: %v", err)
 	}
 
-	routeName1 := "foo"
-	routeName2 := "foo"
+	routeNames := []string{}
+	routePaths := []string{}
+	for name, path := range serviceDef.RoutesMap {
+		routeNames = append(routeNames, name)
+		routePaths = append(routePaths, path)
+	}
+
 	stripPath := false
 
 	expectedRoutes := []gokong.Route{
 		gokong.Route{
-			Name:      &routeName1,
-			Paths:     gokong.StringSlice(serviceDef.Routes[0]),
+			Name:      &routeNames[0],
+			Paths:     gokong.StringSlice(routePaths[0]),
 			Service:   service.Service,
 			StripPath: &stripPath,
 		},
 		gokong.Route{
-			Name:      &routeName2,
-			Paths:     gokong.StringSlice(serviceDef.Routes[1]),
+			Name:      &routeNames[1],
+			Paths:     gokong.StringSlice(routePaths[1]),
 			Service:   service.Service,
 			StripPath: &stripPath,
 		},
@@ -275,10 +280,10 @@ func buildMockClient() (ClientInterface, Routes, Services, Targets, Upstreams) {
 
 func buildExampleServiceDef() ServiceDef {
 	serviceDef := ServiceDef{
-		ServiceName: "test-service.service",
-		Routes: []string{
-			"10.100.100.10",
-			"10.100.100.11",
+		ServiceName: "test-service",
+		RoutesMap: map[string]string{
+			"test-service.10.100.100.10.route": "10.100.100.10",
+			"test-service.10.100.100.11.route": "10.100.100.11",
 		},
 		UpstreamName: "test-service.upstream",
 		Targets: []string{

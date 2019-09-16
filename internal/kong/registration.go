@@ -38,8 +38,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 		return fmt.Errorf("Registration::Register failed to create the ServicesMap: %v", err)
 	}
 
-	for _, path := range serviceDef.Routes {
-		routeName := buildRouteName(serviceDef.ServiceName, path)
+	for routeName, path := range serviceDef.RoutesMap {
 		route, err := buildRoute(kongService, routeName, path, false)
 		if err != nil {
 			gerr = fmt.Errorf("Registration::Register failed to build Route for path '%s': %v. Previous errors: %v", path, err, gerr)
@@ -74,11 +73,6 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 
 func (registration *Registration) Modify(prevService ServiceDef, newService ServiceDef) error {
 	return nil
-}
-
-// TODO
-func buildRouteName(serviceName string, route string) string {
-	return "foo"
 }
 
 func buildRoute(service gokong.Service, routeName string, path string, stripPath bool) (gokong.Route, error) {
