@@ -20,15 +20,13 @@ type K8s struct {
 }
 
 type Kong struct {
+	Registrar  kong.Registrar
 	Translator kong.Translator
 }
 
 type ApiHandler struct {
-	K8s            K8s
-	Kong           Kong
-	Translator     k8s.Translator
-	KongTranslator kong.Translator
-	Registrar      kong.Registrar
+	K8s  K8s
+	Kong Kong
 }
 
 func (apiHandler *ApiHandler) Init() error {
@@ -40,17 +38,17 @@ func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 	log.Info("ApiHandler.ObjectCreated")
 	ingress := obj.(*networking.Ingress)
 
-	serviceMap, err := apiHandler.Translator.IngressToService(ingress)
+	serviceMap, err := apiHandler.K8s.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectCreated: %v", err)
 	}
 
 	for serviceName, serviceDef := range serviceMap {
-		kongService, err := apiHandler.KongTranslator.ServiceToKong(serviceName, serviceDef)
+		kongService, err := apiHandler.Kong.Translator.ServiceToKong(serviceName, serviceDef)
 		if err != nil {
 			return fmt.Errorf("error translating service to Kong service: %v", err)
 		}
-		registrationErr := apiHandler.Registrar.Register(kongService)
+		registrationErr := apiHandler.Kong.Registrar.Register(kongService)
 		if registrationErr != nil {
 			return fmt.Errorf("error registering Kong Service: %v", err)
 		}
@@ -69,7 +67,7 @@ func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
 	//
 	//apiHandler.Registrar.Register(kong)
 
-	_, err := apiHandler.Translator.IngressToService(ingress)
+	_, err := apiHandler.K8s.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectDeleted: %v", err)
 	}
@@ -83,12 +81,12 @@ func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
 	oldIngress := objOld.(*networking.Ingress)
 	newIngress := objNew.(*networking.Ingress)
 
-	_, err := apiHandler.Translator.IngressToService(oldIngress)
+	_, err := apiHandler.K8s.Translator.IngressToService(oldIngress)
 	if err != nil {
 		return fmt.Errorf("ObjectUpdated error translating oldIngress(%v): %v", oldIngress, err)
 	}
 
-	_, err2 := apiHandler.Translator.IngressToService(newIngress)
+	_, err2 := apiHandler.K8s.Translator.IngressToService(newIngress)
 	if err2 != nil {
 		return fmt.Errorf("ObjectUpdated error translating newIngress(%v): %v", newIngress, err)
 	}
