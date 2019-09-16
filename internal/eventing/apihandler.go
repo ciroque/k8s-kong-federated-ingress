@@ -61,12 +61,6 @@ func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
 	log.Infof("ApiHandler.ObjectDeleted: %v", obj)
 	ingress := obj.(*networking.Ingress)
 
-	//intermediate, _ := apiHandler.K8s.Translator.IngressToService(ingress)
-	//
-	//kong, err := apiHandler.Kong.Translator.ServiceToKong(intermediate)
-	//
-	//apiHandler.Registrar.Register(kong)
-
 	_, err := apiHandler.K8s.Translator.IngressToService(ingress)
 	if err != nil {
 		return fmt.Errorf("error handling ObjectDeleted: %v", err)
