@@ -3,14 +3,13 @@ package kong
 import (
 	"context"
 	"fmt"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	gokong "github.com/hbagdi/go-kong/kong"
 )
 
 type Registrar interface {
-	Register(service k8s.ServiceDef) error
-	Deregister(service k8s.ServiceDef) error
-	Modify(prevService k8s.ServiceDef, newService k8s.ServiceDef) error
+	Register(service KongServiceDef) error
+	Deregister(service KongServiceDef) error
+	Modify(prevService KongServiceDef, newService KongServiceDef) error
 }
 
 type Registration struct {
@@ -25,26 +24,25 @@ func NewRegistration(kongClient ClientInterface) (Registration, error) {
 	return *registration, nil
 }
 
-func (registration *Registration) Deregister(service k8s.ServiceDef) error {
+func (registration *Registration) Deregister(service KongServiceDef) error {
 	return nil
 }
 
-func (registration *Registration) Register(serviceDef k8s.ServiceDef) error {
-	resourceNames := NewResourceNames(serviceDef)
+func (registration *Registration) Register(serviceDef KongServiceDef) error {
 
 	var gerr error
 
 	/// ServicesMap
-	kongService, _ := buildService(serviceDef, resourceNames)
+	kongService, _ := buildService(serviceDef)
 	_, err := registration.Kong.Services.Create(registration.context, kongService)
 	if err != nil {
 		return fmt.Errorf("Registration::Register failed to create the ServicesMap: %v", err)
 	}
 
 	/// Routes
-	/// TODO Route names need to be uniqueified
-	for _, path := range serviceDef.Paths {
-		route, err := buildRoute(kongService, resourceNames, path, false)
+	for _, path := range serviceDef.Routes {
+		routeName := buildRouteName(serviceDef.ServiceName, path)
+		route, err := buildRoute(kongService, routeName, path, false)
 		if err != nil {
 			gerr = fmt.Errorf("Registration::Register failed to build Route for path '%s': %v. Previous errors: %v", path, err, gerr)
 		}
@@ -56,7 +54,7 @@ func (registration *Registration) Register(serviceDef k8s.ServiceDef) error {
 	}
 
 	/// UpstreamName
-	upstream, _ := buildUpstream(serviceDef, resourceNames)
+	upstream, _ := buildUpstream(serviceDef)
 	_, err = registration.Kong.Upstreams.Create(registration.context, upstream)
 	if err != nil {
 		return fmt.Errorf("Registration::Register failed to create Upstream: %v. Previous errors: %v", err, gerr)
@@ -64,32 +62,37 @@ func (registration *Registration) Register(serviceDef k8s.ServiceDef) error {
 
 	/// Targets
 	//serviceDef.Addresses become Targets
-	for _, address := range serviceDef.Addresses {
-		target, err := buildTarget(serviceDef, resourceNames, address)
+	for _, targetAddress := range serviceDef.Targets {
+		target, err := buildTarget("upstreamTBD", targetAddress)
 		if err != nil {
-			gerr = fmt.Errorf("Registration::Register failed to build Target for address '%s': %v. Previous errors: %v", address, err, gerr)
+			gerr = fmt.Errorf("Registration::Register failed to build Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
 		}
 
 		_, err = registration.Kong.Targets.Create(registration.context, target)
 		if err != nil {
-			gerr = fmt.Errorf("Registration::Register failed to create Target for address '%s': %v. Previous errors: %v", address, err, gerr)
+			gerr = fmt.Errorf("Registration::Register failed to create Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
 		}
 	}
 
 	return gerr
 }
 
-func (registration *Registration) Modify(prevService k8s.ServiceDef, newService k8s.ServiceDef) error {
+func (registration *Registration) Modify(prevService KongServiceDef, newService KongServiceDef) error {
 	return nil
 }
 
-func buildRoute(service gokong.Service, resourceNames ResourceNames, path string, stripPath bool) (gokong.Route, error) {
+// TODO
+func buildRouteName(serviceName string, route string) string {
+	return "foo"
+}
+
+func buildRoute(service gokong.Service, routeName string, path string, stripPath bool) (gokong.Route, error) {
 	kongRoute := gokong.Route{
 		CreatedAt:               nil,
 		Hosts:                   nil,
 		Headers:                 nil,
 		ID:                      nil,
-		Name:                    &resourceNames.RouteName,
+		Name:                    &routeName,
 		Methods:                 nil,
 		Paths:                   gokong.StringSlice(path),
 		PreserveHost:            nil,
@@ -107,14 +110,14 @@ func buildRoute(service gokong.Service, resourceNames ResourceNames, path string
 	return kongRoute, nil
 }
 
-func buildService(serviceDef k8s.ServiceDef, resourceNames ResourceNames) (gokong.Service, error) {
+func buildService(serviceDef KongServiceDef) (gokong.Service, error) {
 	kongService := gokong.Service{
 		ClientCertificate: nil,
 		ConnectTimeout:    nil,
 		CreatedAt:         nil,
-		Host:              &resourceNames.UpstreamName,
+		Host:              &serviceDef.UpstreamName,
 		ID:                nil,
-		Name:              &resourceNames.ServiceName,
+		Name:              &serviceDef.ServiceName,
 		Path:              nil,
 		Port:              nil,
 		Protocol:          nil,
@@ -128,7 +131,7 @@ func buildService(serviceDef k8s.ServiceDef, resourceNames ResourceNames) (gokon
 	return kongService, nil
 }
 
-func buildTarget(serviceDef k8s.ServiceDef, names ResourceNames, s string) (gokong.Target, error) {
+func buildTarget(upstream string, targetAddress string) (gokong.Target, error) {
 	target := gokong.Target{
 		CreatedAt: nil,
 		ID:        nil,
@@ -141,10 +144,10 @@ func buildTarget(serviceDef k8s.ServiceDef, names ResourceNames, s string) (goko
 }
 
 /// TODO: Support for Health Checks
-func buildUpstream(_ k8s.ServiceDef, resourceNames ResourceNames) (gokong.Upstream, error) {
+func buildUpstream(serviceDef KongServiceDef) (gokong.Upstream, error) {
 	upstream := gokong.Upstream{
 		ID:                 nil,
-		Name:               &resourceNames.UpstreamName,
+		Name:               &serviceDef.UpstreamName,
 		Algorithm:          nil,
 		Slots:              nil,
 		Healthchecks:       nil,

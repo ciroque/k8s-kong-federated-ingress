@@ -7,7 +7,7 @@ import (
 )
 
 type Translator interface {
-	IngressToService(ingress *networking.Ingress) (ServiceDef, error)
+	IngressToService(ingress *networking.Ingress) (ServicesMap, error)
 }
 
 type Translation struct {
