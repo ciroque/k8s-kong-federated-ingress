@@ -36,6 +36,13 @@ func (routes FailRoutes) Create(context context.Context, route *gokong.Route) (*
 	return route, errors.New("420 Enhance your calm")
 }
 
+type ConflictRoutes struct {
+}
+
+func (routes ConflictRoutes) Create(context context.Context, route *gokong.Route) (*gokong.Route, error) {
+	return route, errors.New("409 Conflict")
+}
+
 type TestServices struct {
 	Service *gokong.Service
 }
@@ -50,6 +57,13 @@ type FailServices struct {
 
 func (streams FailServices) Create(context context.Context, service *gokong.Service) (*gokong.Service, error) {
 	return service, errors.New("420 Enhance your calm")
+}
+
+type ConflictServices struct {
+}
+
+func (streams ConflictServices) Create(context context.Context, service *gokong.Service) (*gokong.Service, error) {
+	return service, errors.New("409 Conflict")
 }
 
 type TestTargets struct {
@@ -68,6 +82,13 @@ func (targets FailTargets) Create(context context.Context, target *gokong.Target
 	return target, errors.New("420 Enhance your calm")
 }
 
+type ConflictTargets struct {
+}
+
+func (targets ConflictTargets) Create(context context.Context, target *gokong.Target) (*gokong.Target, error) {
+	return target, errors.New("409 Conflict")
+}
+
 type TestUpstreams struct {
 	Created *gokong.Upstream
 }
@@ -82,6 +103,13 @@ type FailUpstreams struct {
 
 func (upstreams FailUpstreams) Create(context context.Context, upstream *gokong.Upstream) (*gokong.Upstream, error) {
 	return upstream, errors.New("420 Enhance your calm")
+}
+
+type ConflictUpstreams struct {
+}
+
+func (upstreams ConflictUpstreams) Create(context context.Context, upstream *gokong.Upstream) (*gokong.Upstream, error) {
+	return upstream, errors.New("409 Conflict")
 }
 
 /// ********************************************************************************************************************
@@ -144,6 +172,19 @@ func TestRegistration_Register_CreateRouteFails(t *testing.T) {
 	}
 }
 
+func TestRegistration_Register_CreateRouteIgnores409(t *testing.T) {
+	mockClient, _, _, _, _ := buildMockClient()
+	mockClient.Routes = ConflictRoutes{}
+
+	registration, _ := NewRegistration(Client(mockClient))
+	serviceDef := buildExampleServiceDef()
+
+	err := registration.Register(serviceDef)
+	if err != nil {
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
+	}
+}
+
 func TestRegistration_Register_CreateServiceCalled(t *testing.T) {
 	mockClient, _, services, _, _ := buildMockClient()
 
@@ -178,6 +219,19 @@ func TestRegistration_Register_CreateServiceFails(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "420") {
 		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
+	}
+}
+
+func TestRegistration_Register_CreateServiceIgnores409(t *testing.T) {
+	mockClient, _, _, _, _ := buildMockClient()
+	mockClient.Services = ConflictServices{}
+
+	registration, _ := NewRegistration(Client(mockClient))
+	serviceDef := buildExampleServiceDef()
+
+	err := registration.Register(serviceDef)
+	if err != nil {
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
 	}
 }
 
@@ -240,6 +294,19 @@ func TestRegistration_Register_CreateTargetFails(t *testing.T) {
 	}
 }
 
+func TestRegistration_Register_CreateTargetIgnores409(t *testing.T) {
+	mockClient, _, _, _, _ := buildMockClient()
+	mockClient.Targets = ConflictTargets{}
+
+	registration, _ := NewRegistration(Client(mockClient))
+	serviceDef := buildExampleServiceDef()
+
+	err := registration.Register(serviceDef)
+	if err != nil {
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
+	}
+}
+
 func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 	mockClient, _, _, _, upstreams := buildMockClient()
 
@@ -273,6 +340,19 @@ func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 
 	if !strings.Contains(err.Error(), "420") {
 		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
+	}
+}
+
+func TestRegistration_Register_CreateUpstreamIgnores409(t *testing.T) {
+	mockClient, _, _, _, _ := buildMockClient()
+	mockClient.Upstreams = ConflictUpstreams{}
+
+	registration, _ := NewRegistration(Client(mockClient))
+	serviceDef := buildExampleServiceDef()
+
+	err := registration.Register(serviceDef)
+	if err != nil {
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
 	}
 }
 
