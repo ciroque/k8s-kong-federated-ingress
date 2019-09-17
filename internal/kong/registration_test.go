@@ -282,7 +282,6 @@ func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 func buildMockClient() (Client, TestRoutes, TestServices, TestTargets, TestUpstreams) {
 	emptyRoutes := []gokong.Route{}
 	emptyTargets := []gokong.Target{}
-	//var arr []gokong.Route
 
 	routes := TestRoutes{Created: &emptyRoutes}
 	services := TestServices{
