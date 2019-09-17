@@ -3,7 +3,9 @@ package kong
 import (
 	"context"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	gokong "github.com/hbagdi/go-kong/kong"
+	"strings"
 )
 
 type Registrar interface {
@@ -29,13 +31,25 @@ func (registration *Registration) Deregister(service ServiceDef) error {
 }
 
 func (registration *Registration) Register(serviceDef ServiceDef) error {
-
 	var gerr error
+
+	unacceptableHttpStatus := func(err error) bool {
+		if err == nil {
+			return false
+		}
+
+		if strings.Contains(err.Error(), "409") {
+			logrus.Warnf("Skipping an error: %v", err)
+			return false
+		} else {
+			return true
+		}
+	}
 
 	kongService, _ := buildService(serviceDef)
 	_, err := registration.Kong.Services.Create(registration.context, &kongService)
-	if err != nil {
-		return fmt.Errorf("Registration::Register failed to create the ServicesMap: %v", err)
+	if unacceptableHttpStatus(err) {
+		gerr = fmt.Errorf("Registration::Register failed to create the Service: %v", err)
 	}
 
 	for routeName, path := range serviceDef.RoutesMap {
@@ -45,15 +59,15 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 		}
 
 		_, err = registration.Kong.Routes.Create(registration.context, &route)
-		if err != nil {
+		if unacceptableHttpStatus(err) {
 			gerr = fmt.Errorf("Registration::Register failed to create Route for path '%s': %v. Previous errors: %v", path, err, gerr)
 		}
 	}
 
 	upstream, _ := buildUpstream(serviceDef)
 	_, err = registration.Kong.Upstreams.Create(registration.context, &upstream)
-	if err != nil {
-		return fmt.Errorf("Registration::Register failed to create Upstream: %v. Previous errors: %v", err, gerr)
+	if unacceptableHttpStatus(err) {
+		gerr = fmt.Errorf("Registration::Register failed to create Upstream: %v. Previous errors: %v", err, gerr)
 	}
 
 	for _, targetAddress := range serviceDef.Targets {
@@ -63,7 +77,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 		}
 
 		_, err = registration.Kong.Targets.Create(registration.context, &target)
-		if err != nil {
+		if unacceptableHttpStatus(err) {
 			gerr = fmt.Errorf("Registration::Register failed to create Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
 		}
 	}

@@ -33,7 +33,7 @@ type FailRoutes struct {
 }
 
 func (routes FailRoutes) Create(context context.Context, route *gokong.Route) (*gokong.Route, error) {
-	return route, errors.New("409 Conflict")
+	return route, errors.New("420 Enhance your calm")
 }
 
 type TestServices struct {
@@ -49,7 +49,7 @@ type FailServices struct {
 }
 
 func (streams FailServices) Create(context context.Context, service *gokong.Service) (*gokong.Service, error) {
-	return service, errors.New("409 Conflict")
+	return service, errors.New("420 Enhance your calm")
 }
 
 type TestTargets struct {
@@ -65,7 +65,7 @@ type FailTargets struct {
 }
 
 func (targets FailTargets) Create(context context.Context, target *gokong.Target) (*gokong.Target, error) {
-	return target, errors.New("409 Conflict")
+	return target, errors.New("420 Enhance your calm")
 }
 
 type TestUpstreams struct {
@@ -81,7 +81,7 @@ type FailUpstreams struct {
 }
 
 func (upstreams FailUpstreams) Create(context context.Context, upstream *gokong.Upstream) (*gokong.Upstream, error) {
-	return upstream, errors.New("409 Conflict")
+	return upstream, errors.New("420 Enhance your calm")
 }
 
 /// ********************************************************************************************************************
@@ -139,8 +139,8 @@ func TestRegistration_Register_CreateRouteFails(t *testing.T) {
 		t.Fatalf("Register should have failed.")
 	}
 
-	if !strings.Contains(err.Error(), "409") {
-		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
+	if !strings.Contains(err.Error(), "420") {
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
 	}
 }
 
@@ -176,8 +176,8 @@ func TestRegistration_Register_CreateServiceFails(t *testing.T) {
 		t.Fatalf("Register should have failed.")
 	}
 
-	if !strings.Contains(err.Error(), "409") {
-		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
+	if !strings.Contains(err.Error(), "420") {
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
 	}
 }
 
@@ -235,8 +235,8 @@ func TestRegistration_Register_CreateTargetFails(t *testing.T) {
 		t.Fatalf("Register should have failed.")
 	}
 
-	if !strings.Contains(err.Error(), "409") {
-		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
+	if !strings.Contains(err.Error(), "420") {
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
 	}
 }
 
@@ -271,8 +271,8 @@ func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 		t.Fatalf("Register should have failed.")
 	}
 
-	if !strings.Contains(err.Error(), "409") {
-		t.Fatalf("Failure message should contain a '409 Conflict' message. Got: %v", err)
+	if !strings.Contains(err.Error(), "420") {
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
 	}
 }
 
