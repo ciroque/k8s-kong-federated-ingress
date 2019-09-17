@@ -57,7 +57,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 	}
 
 	for _, targetAddress := range serviceDef.Targets {
-		target, err := buildTarget("upstreamTBD", targetAddress)
+		target, err := buildTarget(upstream, targetAddress)
 		if err != nil {
 			gerr = fmt.Errorf("Registration::Register failed to build Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
 		}
@@ -120,19 +120,18 @@ func buildService(serviceDef ServiceDef) (gokong.Service, error) {
 	return kongService, nil
 }
 
-func buildTarget(upstream string, targetAddress string) (gokong.Target, error) {
+func buildTarget(upstream gokong.Upstream, targetAddress string) (gokong.Target, error) {
 	target := gokong.Target{
 		CreatedAt: nil,
 		ID:        nil,
-		Target:    nil,
-		Upstream:  nil,
+		Target:    &targetAddress,
+		Upstream:  &upstream,
 		Weight:    nil,
 		Tags:      nil,
 	}
 	return target, nil
 }
 
-/// TODO: Support for Health Checks
 func buildUpstream(serviceDef ServiceDef) (gokong.Upstream, error) {
 	upstream := gokong.Upstream{
 		ID:                 nil,
