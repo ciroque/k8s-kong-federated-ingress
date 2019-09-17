@@ -20,67 +20,67 @@ type MockClient struct {
 	Upstreams UpstreamsInterface
 }
 
-type Routes struct {
+type TestRoutes struct {
 	Created *[]gokong.Route
 }
 
-func (routes Routes) Create(context context.Context, route gokong.Route) (gokong.Route, error) {
-	*routes.Created = append(*routes.Created, route)
+func (routes TestRoutes) Create(context context.Context, route *gokong.Route) (*gokong.Route, error) {
+	*routes.Created = append(*routes.Created, *route)
 	return route, nil
 }
 
 type FailRoutes struct {
 }
 
-func (routes FailRoutes) Create(context context.Context, route gokong.Route) (gokong.Route, error) {
+func (routes FailRoutes) Create(context context.Context, route *gokong.Route) (*gokong.Route, error) {
 	return route, errors.New("409 Conflict")
 }
 
-type Services struct {
+type TestServices struct {
 	Service *gokong.Service
 }
 
-func (services Services) Create(context context.Context, service gokong.Service) (gokong.Service, error) {
-	*services.Service = service
+func (services TestServices) Create(context context.Context, service *gokong.Service) (*gokong.Service, error) {
+	*services.Service = *service
 	return service, nil
 }
 
 type FailServices struct {
 }
 
-func (streams FailServices) Create(context context.Context, service gokong.Service) (gokong.Service, error) {
+func (streams FailServices) Create(context context.Context, service *gokong.Service) (*gokong.Service, error) {
 	return service, errors.New("409 Conflict")
 }
 
-type Targets struct {
+type TestTargets struct {
 	Created *[]gokong.Target
 }
 
-func (targets Targets) Create(context context.Context, target gokong.Target) (gokong.Target, error) {
-	*targets.Created = append(*targets.Created, target)
+func (targets TestTargets) Create(context context.Context, target *gokong.Target) (*gokong.Target, error) {
+	*targets.Created = append(*targets.Created, *target)
 	return target, nil
 }
 
 type FailTargets struct {
 }
 
-func (targets FailTargets) Create(context context.Context, target gokong.Target) (gokong.Target, error) {
+func (targets FailTargets) Create(context context.Context, target *gokong.Target) (*gokong.Target, error) {
 	return target, errors.New("409 Conflict")
 }
 
-type Upstreams struct {
+type TestUpstreams struct {
 	Created *gokong.Upstream
 }
 
-func (upstreams Upstreams) Create(context context.Context, upstream gokong.Upstream) (gokong.Upstream, error) {
-	*upstreams.Created = upstream
+func (upstreams TestUpstreams) Create(context context.Context, upstream *gokong.Upstream) (*gokong.Upstream, error) {
+	*upstreams.Created = *upstream
 	return upstream, nil
 }
 
 type FailUpstreams struct {
 }
 
-func (upstreams FailUpstreams) Create(context context.Context, upstream gokong.Upstream) (gokong.Upstream, error) {
+func (upstreams FailUpstreams) Create(context context.Context, upstream *gokong.Upstream) (*gokong.Upstream, error) {
 	return upstream, errors.New("409 Conflict")
 }
 
@@ -90,7 +90,7 @@ func (upstreams FailUpstreams) Create(context context.Context, upstream gokong.U
 func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 	mockClient, routes, service, _, _ := buildMockClient()
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 
 	err := registration.Register(serviceDef)
@@ -123,7 +123,7 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedRoutes, *routes.Created) {
-		t.Fatal(fmt.Sprintf("Expected Routes.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedRoutes, *routes.Created))
+		t.Fatal(fmt.Sprintf("Expected TestRoutes.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedRoutes, *routes.Created))
 	}
 }
 
@@ -131,7 +131,7 @@ func TestRegistration_Register_CreateRouteFails(t *testing.T) {
 	mockClient, _, _, _, _ := buildMockClient()
 	mockClient.Routes = FailRoutes{}
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 
 	err := registration.Register(serviceDef)
@@ -147,7 +147,7 @@ func TestRegistration_Register_CreateRouteFails(t *testing.T) {
 func TestRegistration_Register_CreateServiceCalled(t *testing.T) {
 	mockClient, _, services, _, _ := buildMockClient()
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 	expectedService := gokong.Service{
 		Host: &serviceDef.UpstreamName,
@@ -160,7 +160,7 @@ func TestRegistration_Register_CreateServiceCalled(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedService, *services.Service) {
-		t.Fatal(fmt.Sprintf("Expected Services.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedService, *services.Service))
+		t.Fatal(fmt.Sprintf("Expected TestServices.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedService, *services.Service))
 	}
 }
 
@@ -168,7 +168,7 @@ func TestRegistration_Register_CreateServiceFails(t *testing.T) {
 	mockClient, _, _, _, _ := buildMockClient()
 	mockClient.Services = FailServices{}
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 
 	err := registration.Register(serviceDef)
@@ -184,7 +184,7 @@ func TestRegistration_Register_CreateServiceFails(t *testing.T) {
 func TestRegistration_Register_CreateTargetCalled(t *testing.T) {
 	mockClient, _, _, targets, upstreams := buildMockClient()
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 	expectedTargets := []gokong.Target{
 		{
@@ -219,7 +219,7 @@ func TestRegistration_Register_CreateTargetCalled(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedTargets, *targets.Created) {
-		t.Fatal(fmt.Sprintf("Expected Targets.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedTargets, *targets.Created))
+		t.Fatal(fmt.Sprintf("Expected TestTargets.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedTargets, *targets.Created))
 	}
 }
 
@@ -227,7 +227,7 @@ func TestRegistration_Register_CreateTargetFails(t *testing.T) {
 	mockClient, _, _, _, _ := buildMockClient()
 	mockClient.Targets = FailTargets{}
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 
 	err := registration.Register(serviceDef)
@@ -243,7 +243,7 @@ func TestRegistration_Register_CreateTargetFails(t *testing.T) {
 func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 	mockClient, _, _, _, upstreams := buildMockClient()
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 	expectedUpstream := gokong.Upstream{
 		Name: &serviceDef.UpstreamName,
@@ -255,7 +255,7 @@ func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedUpstream, *upstreams.Created) {
-		t.Fatal(fmt.Sprintf("Expected Upstreams.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedUpstream, *upstreams.Created))
+		t.Fatal(fmt.Sprintf("Expected TestUpstreams.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedUpstream, *upstreams.Created))
 	}
 }
 
@@ -263,7 +263,7 @@ func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 	mockClient, _, _, _, _ := buildMockClient()
 	mockClient.Upstreams = FailUpstreams{}
 
-	registration, _ := NewRegistration(ClientInterface(mockClient))
+	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
 
 	err := registration.Register(serviceDef)
@@ -279,17 +279,17 @@ func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 /// ********************************************************************************************************************
 /// HELPERS
 
-func buildMockClient() (ClientInterface, Routes, Services, Targets, Upstreams) {
+func buildMockClient() (Client, TestRoutes, TestServices, TestTargets, TestUpstreams) {
 	emptyRoutes := []gokong.Route{}
 	emptyTargets := []gokong.Target{}
 	//var arr []gokong.Route
 
-	routes := Routes{Created: &emptyRoutes}
-	services := Services{
+	routes := TestRoutes{Created: &emptyRoutes}
+	services := TestServices{
 		Service: new(gokong.Service),
 	}
-	targets := Targets{Created: &emptyTargets}
-	upstreams := Upstreams{Created: new(gokong.Upstream)}
+	targets := TestTargets{Created: &emptyTargets}
+	upstreams := TestUpstreams{Created: new(gokong.Upstream)}
 
 	mockClient := MockClient{
 		Routes:    routes,
@@ -297,7 +297,7 @@ func buildMockClient() (ClientInterface, Routes, Services, Targets, Upstreams) {
 		Targets:   targets,
 		Upstreams: upstreams,
 	}
-	return ClientInterface(mockClient), routes, services, targets, upstreams
+	return Client(mockClient), routes, services, targets, upstreams
 }
 
 func buildExampleServiceDef() ServiceDef {

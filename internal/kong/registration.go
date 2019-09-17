@@ -13,12 +13,12 @@ type Registrar interface {
 }
 
 type Registration struct {
-	Kong        ClientInterface
+	Kong        Client
 	context     context.Context
 	listOptions gokong.ListOpt
 }
 
-func NewRegistration(kongClient ClientInterface) (Registration, error) {
+func NewRegistration(kongClient Client) (Registration, error) {
 	registration := new(Registration)
 	registration.Kong = kongClient
 	return *registration, nil
@@ -33,7 +33,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 	var gerr error
 
 	kongService, _ := buildService(serviceDef)
-	_, err := registration.Kong.Services.Create(registration.context, kongService)
+	_, err := registration.Kong.Services.Create(registration.context, &kongService)
 	if err != nil {
 		return fmt.Errorf("Registration::Register failed to create the ServicesMap: %v", err)
 	}
@@ -44,14 +44,14 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 			gerr = fmt.Errorf("Registration::Register failed to build Route for path '%s': %v. Previous errors: %v", path, err, gerr)
 		}
 
-		_, err = registration.Kong.Routes.Create(registration.context, route)
+		_, err = registration.Kong.Routes.Create(registration.context, &route)
 		if err != nil {
 			gerr = fmt.Errorf("Registration::Register failed to create Route for path '%s': %v. Previous errors: %v", path, err, gerr)
 		}
 	}
 
 	upstream, _ := buildUpstream(serviceDef)
-	_, err = registration.Kong.Upstreams.Create(registration.context, upstream)
+	_, err = registration.Kong.Upstreams.Create(registration.context, &upstream)
 	if err != nil {
 		return fmt.Errorf("Registration::Register failed to create Upstream: %v. Previous errors: %v", err, gerr)
 	}
@@ -62,7 +62,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 			gerr = fmt.Errorf("Registration::Register failed to build Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
 		}
 
-		_, err = registration.Kong.Targets.Create(registration.context, target)
+		_, err = registration.Kong.Targets.Create(registration.context, &target)
 		if err != nil {
 			gerr = fmt.Errorf("Registration::Register failed to create Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
 		}

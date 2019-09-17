@@ -9,18 +9,21 @@
 package main
 
 import (
+	"crypto/tls"
+	"fmt"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/eventing"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/kong"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
-
+	gokong "github.com/hbagdi/go-kong/kong"
 	networking "k8s.io/api/networking/v1beta1"
-	//api_v1 "k8s.io/api/core/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -105,10 +108,21 @@ func main() {
 	// handle logging, connections, informing (listing and watching), the queue,
 	// and the handler
 
+	httpClient := buildHttpClient()
+	kongClient, err := buildKongClient(httpClient)
+	if err != nil {
+		fmt.Println(fmt.Errorf("SOMETHING WENT HORRIBLY HORRIBLY WRONG. Unable to create a go-kong.Client: %v", err))
+	}
+
 	eventingK8s := eventing.K8s{Translator: &k8s.Translation{}}
 	eventingKong := eventing.Kong{
 		Registrar: &kong.Registration{
-			Kong: kong.ClientInterface{}, /// TODOL Give this a real go-kong.Client with initialization and e'ytang
+			Kong: kong.Client{
+				Routes:    kong.Routes{Kong: *kongClient},
+				Services:  kong.Services{Kong: *kongClient},
+				Targets:   kong.Targets{Kong: *kongClient},
+				Upstreams: kong.Upstreams{Kong: *kongClient},
+			}, /// TODO: Give this a real go-kong.Client with initialization and e'ytang
 		},
 		Translator: &kong.Translation{},
 	}
@@ -137,4 +151,27 @@ func main() {
 	signal.Notify(sigTerm, syscall.SIGTERM)
 	signal.Notify(sigTerm, syscall.SIGINT)
 	<-sigTerm
+}
+
+func buildKongClient(client *http.Client) (*gokong.Client, error) {
+	host := "http://localhost:8001" /// TODO: Pull this from somewhere meaningful...
+	return gokong.NewClient(&host, client)
+}
+
+func buildHttpClient() *http.Client {
+	headers := []string{"Content-Type: application/json", "Accept: application/json"}
+	var tlsConfig tls.Config
+	tlsConfig.InsecureSkipVerify = true
+
+	defaultTransport := http.DefaultTransport.(*http.Transport)
+
+	defaultTransport.TLSClientConfig = &tlsConfig
+
+	httpClient := http.DefaultClient
+	httpClient.Transport = &eventing.RoundTripper{
+		Headers:      headers,
+		RoundTripper: defaultTransport,
+	}
+
+	return httpClient
 }
