@@ -21,12 +21,12 @@ func TestTranslation_K8sServiceToKongService(t *testing.T) {
 	}
 
 	expectedKongServiceDef := ServiceDef{
-		ServiceName: serviceDef.Namespace + "-" + serviceName + ".service",
+		ServiceName: serviceDef.Namespace + "." + serviceName + ".service",
 		RoutesMap: map[string]string{
-			serviceDef.Namespace + "-" + serviceName + "-" + serviceDef.Paths[0] + ".route": serviceDef.Paths[0],
-			serviceDef.Namespace + "-" + serviceName + "-" + serviceDef.Paths[1] + ".route": serviceDef.Paths[1],
+			serviceDef.Namespace + "." + serviceName + ".apple.route":  serviceDef.Paths[0],
+			serviceDef.Namespace + "." + serviceName + ".banana.route": serviceDef.Paths[1],
 		},
-		UpstreamName: serviceDef.Namespace + "-" + serviceName + ".upstream",
+		UpstreamName: serviceDef.Namespace + "." + serviceName + ".upstream",
 		Targets:      serviceDef.Addresses,
 	}
 
