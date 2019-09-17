@@ -48,8 +48,8 @@ func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 		if err != nil {
 			return fmt.Errorf("error translating service to Kong service: %v", err)
 		}
-		registrationErr := apiHandler.Kong.Registrar.Register(kongService)
-		if registrationErr != nil {
+		err = apiHandler.Kong.Registrar.Register(kongService)
+		if err != nil {
 			return fmt.Errorf("error registering Kong Service: %v", err)
 		}
 	}
