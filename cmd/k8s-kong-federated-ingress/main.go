@@ -11,18 +11,18 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/eventing"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/kong"
+	gokong "github.com/hbagdi/go-kong/kong"
+	networking "k8s.io/api/networking/v1beta1"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-
-	log "github.com/Sirupsen/logrus"
-	gokong "github.com/hbagdi/go-kong/kong"
-	networking "k8s.io/api/networking/v1beta1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -163,15 +163,21 @@ func buildHttpClient() *http.Client {
 	var tlsConfig tls.Config
 	tlsConfig.InsecureSkipVerify = true
 
-	defaultTransport := http.DefaultTransport.(*http.Transport)
+	transport := http.DefaultTransport.(*http.Transport)
 
-	defaultTransport.TLSClientConfig = &tlsConfig
+	transport.TLSClientConfig = &tlsConfig
 
-	httpClient := http.DefaultClient
-	httpClient.Transport = &eventing.RoundTripper{
-		Headers:      headers,
-		RoundTripper: defaultTransport,
+	httpClient := http.Client{
+		Transport:     transport,
+		CheckRedirect: nil,
+		Jar:           nil,
+		Timeout:       time.Second * 10,
 	}
 
-	return httpClient
+	httpClient.Transport = &eventing.RoundTripper{
+		Headers:      headers,
+		RoundTripper: transport,
+	}
+
+	return &httpClient
 }
