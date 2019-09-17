@@ -122,7 +122,7 @@ func main() {
 				Services:  kong.Services{Kong: *kongClient},
 				Targets:   kong.Targets{Kong: *kongClient},
 				Upstreams: kong.Upstreams{Kong: *kongClient},
-			}, /// TODO: Give this a real go-kong.Client with initialization and e'ytang
+			},
 		},
 		Translator: &kong.Translation{},
 	}
