@@ -27,7 +27,32 @@ func NewRegistration(kongClient Client) (Registration, error) {
 }
 
 func (registration *Registration) Deregister(service ServiceDef) error {
-	return nil
+	var gerr error
+	for _, target := range service.Targets {
+		err := registration.Kong.Targets.Delete(registration.context, &service.UpstreamName, &target)
+		if err != nil {
+			gerr = fmt.Errorf("Registration::Deregister failed to delete a Target: %v", err)
+		}
+	}
+
+	err := registration.Kong.Upstreams.Delete(registration.context, &service.UpstreamName)
+	if err != nil {
+		gerr = fmt.Errorf("Registration::Deregister failed to delete the Upstream: %v", err)
+	}
+
+	for name, _ := range service.RoutesMap {
+		err := registration.Kong.Routes.Delete(registration.context, &name)
+		if err != nil {
+			gerr = fmt.Errorf("Registration::Deregister failed to delete a Route: %v", err)
+		}
+	}
+
+	err = registration.Kong.Services.Delete(registration.context, &service.ServiceName)
+	if err != nil {
+		gerr = fmt.Errorf("Registration::Deregister failed to delete the Service: %v", err)
+	}
+
+	return gerr
 }
 
 func (registration *Registration) Register(serviceDef ServiceDef) error {
