@@ -91,8 +91,8 @@ func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
 		return fmt.Errorf("ObjectUpdated error translating oldIngress(%v): %v", oldIngress, err)
 	}
 
-	_, err2 := apiHandler.K8s.Translator.IngressToService(newIngress)
-	if err2 != nil {
+	_, err = apiHandler.K8s.Translator.IngressToService(newIngress)
+	if err != nil {
 		return fmt.Errorf("ObjectUpdated error translating newIngress(%v): %v", newIngress, err)
 	}
 
