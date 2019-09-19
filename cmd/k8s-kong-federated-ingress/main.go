@@ -10,6 +10,7 @@ package main
 
 import (
 	"crypto/tls"
+	"errors"
 	log "github.com/Sirupsen/logrus"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/eventing"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
@@ -31,10 +32,8 @@ import (
 	"k8s.io/client-go/util/workqueue"
 )
 
-func GetKubernetesClient(config Config) kubernetes.Interface {
-	kubeConfigPath := os.Getenv(config.KubeConfigPathEnvironmentVariable)
-
-	k8sConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+func GetKubernetesClient(config *Config) kubernetes.Interface {
+	k8sConfig, err := clientcmd.BuildConfigFromFlags("", config.KubeConfigPath)
 	if err != nil {
 		log.Fatalf("GetKubernetesClient: %v", err)
 	}
@@ -49,20 +48,32 @@ func GetKubernetesClient(config Config) kubernetes.Interface {
 }
 
 type Config struct {
-	KongHostEnvironmentVariable       string
-	KubeConfigPathEnvironmentVariable string
+	KubeConfigPath string
+	KongHost       string
 }
 
 /// Pulling from environment variables for now. TODO: Use Consul to home the configuration values (optionally)
-func NewConfig() Config {
-	return Config{
-		KongHostEnvironmentVariable:       "KONG_HOST",
-		KubeConfigPathEnvironmentVariable: "KUBE_CONFIG_FILE",
+func NewConfig() (*Config, error) {
+	config := new(Config)
+
+	config.KongHost = os.Getenv("KONG_HOST")
+	if config.KongHost == "" {
+		return nil, errors.New("the KONG_HOST variable is not defined. This is required")
 	}
+
+	config.KubeConfigPath = os.Getenv("KUBE_CONFIG_FILE")
+	if config.KubeConfigPath == "" {
+		return nil, errors.New("the KUBE_CONFIG_FILE variable is not defined. This is required")
+	}
+
+	return config, nil
 }
 
 func main() {
-	config := NewConfig()
+	config, err := NewConfig()
+	if err != nil {
+		log.Fatalf("Failed to load Config: %#v", err)
+	}
 
 	client := GetKubernetesClient(config)
 
@@ -103,7 +114,7 @@ func main() {
 	httpClient := buildHttpClient()
 	kongClient, err := buildKongClient(httpClient, config)
 	if err != nil {
-		log.Fatalf("Unable to create a Kong Client (Ensure that the %s environment variable is set!): %#v\n", config.KongHostEnvironmentVariable, err)
+		log.Fatalf("Unable to create a Kong Client: %#v\n", err)
 	}
 
 	eventingK8s := eventing.K8s{Translator: &k8s.Translation{}}
@@ -141,9 +152,8 @@ func main() {
 	<-sigTerm
 }
 
-func buildKongClient(client *http.Client, config Config) (*gokong.Client, error) {
-	host := os.Getenv(config.KongHostEnvironmentVariable)
-	return gokong.NewClient(&host, client)
+func buildKongClient(client *http.Client, config *Config) (*gokong.Client, error) {
+	return gokong.NewClient(&config.KongHost, client)
 }
 
 func buildHttpClient() *http.Client {
