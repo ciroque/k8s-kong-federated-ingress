@@ -64,23 +64,14 @@ func NewConfig() Config {
 func main() {
 	config := NewConfig()
 
-	// get the Kubernetes client for connectivity
 	client := GetKubernetesClient(config)
 
-	// create the informer so that we can not only list resources
-	// but also watch them for all Ingress resources in the default namespace
 	informer := cache.NewSharedIndexInformer(
-		// the ListWatch contains two different functions that our
-		// informer requires: ListFunc to take care of listing and watching
-		// the resources we want to handle
 		&cache.ListWatch{
 			ListFunc: func(options meta_v1.ListOptions) (runtime.Object, error) {
-				// list all of the ingresses (Ingress resource) in the default namespace
-				//return client.NetworkingV1beta1().Ingresses("app-services").List(options)
 				return client.NetworkingV1beta1().Ingresses(meta_v1.NamespaceAll).List(options)
 			},
 			WatchFunc: func(options meta_v1.ListOptions) (watch.Interface, error) {
-				//return client.NetworkingV1beta1().Ingresses("app-services").Watch(options)
 				return client.NetworkingV1beta1().Ingresses(meta_v1.NamespaceAll).Watch(options)
 			},
 		},
@@ -91,10 +82,6 @@ func main() {
 
 	eventQueue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 
-	// add event handlers to handle the three types of events for resources:
-	//  - adding new resources
-	//  - updating existing resources
-	//  - deleting resources
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			e := eventing.NewEvent(eventing.Created, obj, nil)
@@ -116,8 +103,6 @@ func main() {
 	httpClient := buildHttpClient()
 	kongClient, err := buildKongClient(httpClient, config)
 	if err != nil {
-		//fmt.Fprintf(os.Stderr, "Unable to create a Kong Client (Ensure that the %s environment variable is set!): %#v\n", config.KongHostEnvironmentVariable, err)
-		//os.Exit(1)
 		log.Fatalf("Unable to create a Kong Client (Ensure that the %s environment variable is set!): %#v\n", config.KongHostEnvironmentVariable, err)
 	}
 
@@ -145,15 +130,11 @@ func main() {
 		},
 	}
 
-	// use a channel to synchronize the finalization for a graceful shutdown
 	stopCh := make(chan struct{})
 	defer close(stopCh)
 
-	// run the controller loop to process items
 	go controller.Run(stopCh)
 
-	// use a channel to handle OS signals to terminate and gracefully shut
-	// down processing
 	sigTerm := make(chan os.Signal, 1)
 	signal.Notify(sigTerm, syscall.SIGTERM)
 	signal.Notify(sigTerm, syscall.SIGINT)
