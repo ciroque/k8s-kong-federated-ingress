@@ -179,7 +179,7 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register failed with: %v", err)
+		t.Fatalf("Register failed with: %#v", err)
 	}
 
 	routeNames := []string{}
@@ -207,7 +207,7 @@ func TestRegistration_Register_CreateRouteCalled(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedRoutes, *routes.Created) {
-		t.Fatal(fmt.Sprintf("Expected TestRoutes.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedRoutes, *routes.Created))
+		t.Fatal(fmt.Sprintf("Expected TestRoutes.Create to be called with:\n\t%#v, \nbut got\n\t%#v", expectedRoutes, *routes.Created))
 	}
 }
 
@@ -224,7 +224,7 @@ func TestRegistration_Register_CreateRouteFails(t *testing.T) {
 	}
 
 	if !strings.Contains(err.Error(), "420") {
-		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %#v", err)
 	}
 }
 
@@ -237,7 +237,7 @@ func TestRegistration_Register_CreateRouteIgnores409(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %#v", err)
 	}
 }
 
@@ -253,11 +253,11 @@ func TestRegistration_Register_CreateServiceCalled(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register failed with: %v", err)
+		t.Fatalf("Register failed with: %#v", err)
 	}
 
 	if !reflect.DeepEqual(expectedService, *services.Service) {
-		t.Fatal(fmt.Sprintf("Expected TestServices.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedService, *services.Service))
+		t.Fatal(fmt.Sprintf("Expected TestServices.Create to be called with:\n\t%#v, \nbut got\n\t%#v", expectedService, *services.Service))
 	}
 }
 
@@ -274,7 +274,7 @@ func TestRegistration_Register_CreateServiceFails(t *testing.T) {
 	}
 
 	if !strings.Contains(err.Error(), "420") {
-		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %#v", err)
 	}
 }
 
@@ -287,7 +287,7 @@ func TestRegistration_Register_CreateServiceIgnores409(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %#v", err)
 	}
 }
 
@@ -325,11 +325,11 @@ func TestRegistration_Register_CreateTargetCalled(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register failed with: %v", err)
+		t.Fatalf("Register failed with: %#v", err)
 	}
 
 	if !reflect.DeepEqual(expectedTargets, *targets.Created) {
-		t.Fatal(fmt.Sprintf("Expected TestTargets.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedTargets, *targets.Created))
+		t.Fatal(fmt.Sprintf("Expected TestTargets.Create to be called with:\n\t%#v, \nbut got\n\t%#v", expectedTargets, *targets.Created))
 	}
 }
 
@@ -346,7 +346,7 @@ func TestRegistration_Register_CreateTargetFails(t *testing.T) {
 	}
 
 	if !strings.Contains(err.Error(), "420") {
-		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %#v", err)
 	}
 }
 
@@ -359,7 +359,7 @@ func TestRegistration_Register_CreateTargetIgnores409(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %#v", err)
 	}
 }
 
@@ -374,11 +374,11 @@ func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register failed with: %v", err)
+		t.Fatalf("Register failed with: %#v", err)
 	}
 
 	if !reflect.DeepEqual(expectedUpstream, *upstreams.Created) {
-		t.Fatal(fmt.Sprintf("Expected TestUpstreams.Create to be called with:\n\t%v, \nbut got\n\t%v", expectedUpstream, *upstreams.Created))
+		t.Fatal(fmt.Sprintf("Expected TestUpstreams.Create to be called with:\n\t%#v, \nbut got\n\t%#v", expectedUpstream, *upstreams.Created))
 	}
 }
 
@@ -395,7 +395,7 @@ func TestRegistration_Register_CreateUpstreamFails(t *testing.T) {
 	}
 
 	if !strings.Contains(err.Error(), "420") {
-		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %v", err)
+		t.Fatalf("Failure message should contain a '420 Enhance your calm' message. Got: %#v", err)
 	}
 }
 
@@ -408,7 +408,7 @@ func TestRegistration_Register_CreateUpstreamIgnores409(t *testing.T) {
 
 	err := registration.Register(serviceDef)
 	if err != nil {
-		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %v", err)
+		t.Fatalf("Register should not have failed. 409 Conflict responses are ignored. %#v", err)
 	}
 }
 
@@ -420,11 +420,11 @@ func TestRegistration_Deregister(t *testing.T) {
 	err := registration.Deregister(serviceDef)
 
 	if err != nil {
-		t.Fatalf("Deregister failed with: %v", err)
+		t.Fatalf("Deregister failed with: %#v", err)
 	}
 
 	if !reflect.DeepEqual(serviceDef.Targets, *targets.Deleted) {
-		t.Fatal(fmt.Sprintf("Expected Targets.Delete to have been called with:\n\t%v, \nActual:\n\t%v", serviceDef.Targets, *targets.Deleted))
+		t.Fatal(fmt.Sprintf("Expected Targets.Delete to have been called with:\n\t%#v, \nActual:\n\t%#v", serviceDef.Targets, *targets.Deleted))
 	}
 
 	if serviceDef.UpstreamName != *upstreams.Deleted {
@@ -437,11 +437,11 @@ func TestRegistration_Deregister(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedRoutes, *routes.Deleted) {
-		t.Fatal(fmt.Sprintf("Expected Routes.Delete to have been called with:\n\t%v, \nActual:\n\t%v", expectedRoutes, *routes.Deleted))
+		t.Fatal(fmt.Sprintf("Expected Routes.Delete to have been called with:\n\t%#v, \nActual:\n\t%#v", expectedRoutes, *routes.Deleted))
 	}
 
 	if serviceDef.ServiceName != *services.Deleted {
-		t.Fatalf(fmt.Sprintf("Expected Services.Delete to have been called with:\n\t%v, Actual: \n\t%v", serviceDef.ServiceName, *services.Deleted))
+		t.Fatalf(fmt.Sprintf("Expected Services.Delete to have been called with:\n\t%#v, Actual: \n\t%#v", serviceDef.ServiceName, *services.Deleted))
 	}
 }
 

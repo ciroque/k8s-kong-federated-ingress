@@ -66,10 +66,10 @@ func (c *Controller) processNextItem() bool {
 	withRetry := func(err error) {
 		if err != nil {
 			if c.Queue.NumRequeues(e) < 5 {
-				log.Warnf("Requeuing %v due to error: %v", e, err)
+				log.Warnf("Requeuing %#v due to error: %#v", e, err)
 				c.Queue.AddRateLimited(e)
 			} else {
-				log.Errorf("Dropping %v due to too many errors. Latest error: %v", e, err)
+				log.Errorf("Dropping %#v due to too many errors. Latest error: %#v", e, err)
 				c.Queue.Forget(e)
 			}
 		}

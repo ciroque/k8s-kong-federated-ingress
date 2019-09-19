@@ -40,13 +40,13 @@ func GetKubernetesClient() kubernetes.Interface {
 	// create the config from the path
 	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
-		log.Fatalf("getClusterConfig: %v", err)
+		log.Fatalf("getClusterConfig: %#v", err)
 	}
 
 	// generate the client based off of the config
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Fatalf("getClusterConfig: %v", err)
+		log.Fatalf("getClusterConfig: %#v", err)
 	}
 
 	log.Info("Successfully constructed k8s client")
@@ -90,17 +90,17 @@ func main() {
 		AddFunc: func(obj interface{}) {
 			e := eventing.NewEvent(eventing.Created, obj, nil)
 			eventQueue.Add(e)
-			log.Infof("Added Created event to eventQueue %v", e)
+			log.Infof("Added Created event to eventQueue %#v", e)
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			e := eventing.NewEvent(eventing.Updated, newObj, oldObj)
 			eventQueue.Add(e)
-			log.Infof("Added Updated event to eventQueue %v", e)
+			log.Infof("Added Updated event to eventQueue %#v", e)
 		},
 		DeleteFunc: func(obj interface{}) {
 			e := eventing.NewEvent(eventing.Deleted, obj, nil)
 			eventQueue.Add(e)
-			log.Infof("Added Deleted event to eventQueue %v", e)
+			log.Infof("Added Deleted event to eventQueue %#v", e)
 		},
 	})
 
@@ -111,7 +111,7 @@ func main() {
 	httpClient := buildHttpClient()
 	kongClient, err := buildKongClient(httpClient)
 	if err != nil {
-		fmt.Println(fmt.Errorf("SOMETHING WENT HORRIBLY HORRIBLY WRONG. Unable to create a go-kong.Client: %v", err))
+		fmt.Println(fmt.Errorf("SOMETHING WENT HORRIBLY HORRIBLY WRONG. Unable to create a go-kong.Client: %#v", err))
 	}
 
 	eventingK8s := eventing.K8s{Translator: &k8s.Translation{}}

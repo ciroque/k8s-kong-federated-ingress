@@ -33,10 +33,10 @@ func TestTranslation_K8sServiceToKongService(t *testing.T) {
 	actualKongServiceDef, err := translation.ServiceToKong(serviceName, serviceDef)
 
 	if err != nil {
-		t.Fatalf("error translating k8s.K8sServiceDef to kong.ServiceDef: %v", err)
+		t.Fatalf("error translating k8s.K8sServiceDef to kong.ServiceDef: %#v", err)
 	}
 
 	if !reflect.DeepEqual(expectedKongServiceDef, actualKongServiceDef) {
-		t.Fatalf("expected K8sServiceDef to be:\n\t%v\n, got:\n\t%v", expectedKongServiceDef, actualKongServiceDef)
+		t.Fatalf("expected K8sServiceDef to be:\n\t%#v\n, got:\n\t%#v", expectedKongServiceDef, actualKongServiceDef)
 	}
 }

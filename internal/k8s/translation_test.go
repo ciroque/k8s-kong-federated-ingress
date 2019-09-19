@@ -66,11 +66,11 @@ func TestTranslation_IngressToService(t *testing.T) {
 	actualService, err := translation.IngressToService(&ingress)
 
 	if err != nil {
-		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
+		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %#v", err)
 	}
 
 	if !reflect.DeepEqual(expectedServiceMap, actualService) {
-		t.Fatalf("expected K8sServiceDef to be:\n\t%v\n, got:\n\t%v", expectedServiceMap, actualService)
+		t.Fatalf("expected K8sServiceDef to be:\n\t%#v\n, got:\n\t%#v", expectedServiceMap, actualService)
 	}
 }
 
@@ -147,11 +147,11 @@ func TestTranslation_IngressToServiceDef_MultipleServicesInRules(t *testing.T) {
 	actualServiceMap, err := translation.IngressToService(&ingress)
 
 	if err != nil {
-		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
+		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %#v", err)
 	}
 
 	if !reflect.DeepEqual(expectedServiceMap, actualServiceMap) {
-		t.Fatalf("expected K8sServiceDef to be:\n\t%v\n, got:\n\t%v", expectedServiceMap, actualServiceMap)
+		t.Fatalf("expected K8sServiceDef to be:\n\t%#v\n, got:\n\t%#v", expectedServiceMap, actualServiceMap)
 	}
 }
 
@@ -203,10 +203,10 @@ func TestTranslation_IngressToService_NoAddressesPresent(t *testing.T) {
 	actualServiceMap, err := translation.IngressToService(&ingress)
 
 	if err != nil {
-		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %v", err)
+		t.Fatalf("error translating networking.Ingress to k8s.K8sServiceDef: %#v", err)
 	}
 
 	if !reflect.DeepEqual(expectedService, actualServiceMap[testServiceName]) {
-		t.Fatalf("expected K8sServiceDef to be:\n\t%v,\ngot:\n\t%v", expectedService, actualServiceMap[testServiceName])
+		t.Fatalf("expected K8sServiceDef to be:\n\t%#v,\ngot:\n\t%#v", expectedService, actualServiceMap[testServiceName])
 	}
 }

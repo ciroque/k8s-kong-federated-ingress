@@ -40,17 +40,17 @@ func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 
 	serviceMap, err := apiHandler.K8s.Translator.IngressToService(ingress)
 	if err != nil {
-		return fmt.Errorf("ApiHandler::ObjectCreated error handling ObjectCreated: %v", err)
+		return fmt.Errorf("ApiHandler::ObjectCreated error handling ObjectCreated: %#v", err)
 	}
 
 	for serviceName, serviceDef := range serviceMap {
 		kongService, err := apiHandler.Kong.Translator.ServiceToKong(serviceName, serviceDef)
 		if err != nil {
-			return fmt.Errorf("ApiHandler::ObjectCreated error translating service to Kong service: %v", err)
+			return fmt.Errorf("ApiHandler::ObjectCreated error translating service to Kong service: %#v", err)
 		}
 		err = apiHandler.Kong.Registrar.Register(kongService)
 		if err != nil {
-			return fmt.Errorf("ApiHandler::ObjectCreated error registering Kong Service: %v", err)
+			return fmt.Errorf("ApiHandler::ObjectCreated error registering Kong Service: %#v", err)
 		}
 	}
 
@@ -58,23 +58,23 @@ func (apiHandler *ApiHandler) ObjectCreated(obj interface{}) error {
 }
 
 func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
-	log.Infof("ApiHandler.ObjectDeleted: %v", obj)
+	log.Infof("ApiHandler.ObjectDeleted: %#v", obj)
 	ingress := obj.(*networking.Ingress)
 
 	serviceMap, err := apiHandler.K8s.Translator.IngressToService(ingress)
 	if err != nil {
-		return fmt.Errorf("error handling ObjectDeleted: %v", err)
+		return fmt.Errorf("error handling ObjectDeleted: %#v", err)
 	}
 
 	for serviceName, serviceDef := range serviceMap {
 		kongService, err := apiHandler.Kong.Translator.ServiceToKong(serviceName, serviceDef)
 		if err != nil {
-			return fmt.Errorf("ApiHandler::ObjectDeleted failed to translate a k8s.ServiceDef to a kong.ServiceDef: %v", err)
+			return fmt.Errorf("ApiHandler::ObjectDeleted failed to translate a k8s.ServiceDef to a kong.ServiceDef: %#v", err)
 		}
 
 		err = apiHandler.Kong.Registrar.Deregister(kongService)
 		if err != nil {
-			return fmt.Errorf("ApiHandler::ObjectDeleted failed to Deregister a service: %v. Error: ", kongService, err)
+			return fmt.Errorf("ApiHandler::ObjectDeleted failed to Deregister a service: %#v. Error: %#v", kongService, err)
 		}
 	}
 
@@ -88,12 +88,12 @@ func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
 
 	_, err := apiHandler.K8s.Translator.IngressToService(oldIngress)
 	if err != nil {
-		return fmt.Errorf("ObjectUpdated error translating oldIngress(%v): %v", oldIngress, err)
+		return fmt.Errorf("ObjectUpdated error translating oldIngress(%#v): %#v", oldIngress, err)
 	}
 
 	_, err = apiHandler.K8s.Translator.IngressToService(newIngress)
 	if err != nil {
-		return fmt.Errorf("ObjectUpdated error translating newIngress(%v): %v", newIngress, err)
+		return fmt.Errorf("ObjectUpdated error translating newIngress(%#v): %#v", newIngress, err)
 	}
 
 	//return apiHandler.Registrar.Modify(oldService, newService)

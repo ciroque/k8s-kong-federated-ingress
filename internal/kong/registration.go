@@ -31,25 +31,25 @@ func (registration *Registration) Deregister(service ServiceDef) error {
 	for _, target := range service.Targets {
 		err := registration.Kong.Targets.Delete(registration.context, &service.UpstreamName, &target)
 		if err != nil {
-			gerr = fmt.Errorf("Registration::Deregister failed to delete a Target: %v", err)
+			gerr = fmt.Errorf("Registration::Deregister failed to delete a Target: %#v", err)
 		}
 	}
 
 	err := registration.Kong.Upstreams.Delete(registration.context, &service.UpstreamName)
 	if err != nil {
-		gerr = fmt.Errorf("Registration::Deregister failed to delete the Upstream: %v", err)
+		gerr = fmt.Errorf("Registration::Deregister failed to delete the Upstream: %#v", err)
 	}
 
 	for name, _ := range service.RoutesMap {
 		err := registration.Kong.Routes.Delete(registration.context, &name)
 		if err != nil {
-			gerr = fmt.Errorf("Registration::Deregister failed to delete a Route: %v", err)
+			gerr = fmt.Errorf("Registration::Deregister failed to delete a Route: %#v", err)
 		}
 	}
 
 	err = registration.Kong.Services.Delete(registration.context, &service.ServiceName)
 	if err != nil {
-		gerr = fmt.Errorf("Registration::Deregister failed to delete the Service: %v", err)
+		gerr = fmt.Errorf("Registration::Deregister failed to delete the Service: %#v", err)
 	}
 
 	return gerr
@@ -64,7 +64,7 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 		}
 
 		if strings.Contains(err.Error(), "409") {
-			logrus.Warnf("Skipping an error: %v", err)
+			logrus.Warnf("Skipping an error: %#v", err)
 			return false
 		} else {
 			return true
@@ -74,36 +74,36 @@ func (registration *Registration) Register(serviceDef ServiceDef) error {
 	kongService, _ := buildService(serviceDef)
 	_, err := registration.Kong.Services.Create(registration.context, &kongService)
 	if unacceptableHttpStatus(err) {
-		gerr = fmt.Errorf("Registration::Register failed to create the Service: %v", err)
+		gerr = fmt.Errorf("Registration::Register failed to create the Service: %#v", err)
 	}
 
 	for routeName, path := range serviceDef.RoutesMap {
 		route, err := buildRoute(kongService, routeName, path, false)
 		if err != nil {
-			gerr = fmt.Errorf("Registration::Register failed to build Route for path '%s': %v. Previous errors: %v", path, err, gerr)
+			gerr = fmt.Errorf("Registration::Register failed to build Route for path '%s': %#v. Previous errors: %#v", path, err, gerr)
 		}
 
 		_, err = registration.Kong.Routes.Create(registration.context, &route)
 		if unacceptableHttpStatus(err) {
-			gerr = fmt.Errorf("Registration::Register failed to create Route for path '%s': %v. Previous errors: %v", path, err, gerr)
+			gerr = fmt.Errorf("Registration::Register failed to create Route for path '%s': %#v. Previous errors: %#v", path, err, gerr)
 		}
 	}
 
 	upstream, _ := buildUpstream(serviceDef)
 	_, err = registration.Kong.Upstreams.Create(registration.context, &upstream)
 	if unacceptableHttpStatus(err) {
-		gerr = fmt.Errorf("Registration::Register failed to create Upstream: %v. Previous errors: %v", err, gerr)
+		gerr = fmt.Errorf("Registration::Register failed to create Upstream: %#v. Previous errors: %#v", err, gerr)
 	}
 
 	for _, targetAddress := range serviceDef.Targets {
 		target, err := buildTarget(upstream, targetAddress)
 		if err != nil {
-			gerr = fmt.Errorf("Registration::Register failed to build Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
+			gerr = fmt.Errorf("Registration::Register failed to build Target for address '%s': %#v. Previous errors: %#v", targetAddress, err, gerr)
 		}
 
 		_, err = registration.Kong.Targets.Create(registration.context, &target)
 		if unacceptableHttpStatus(err) {
-			gerr = fmt.Errorf("Registration::Register failed to create Target for address '%s': %v. Previous errors: %v", targetAddress, err, gerr)
+			gerr = fmt.Errorf("Registration::Register failed to create Target for address '%s': %#v. Previous errors: %#v", targetAddress, err, gerr)
 		}
 	}
 
