@@ -10,7 +10,6 @@ package main
 
 import (
 	"crypto/tls"
-	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/eventing"
 	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
@@ -32,31 +31,41 @@ import (
 	"k8s.io/client-go/util/workqueue"
 )
 
-// retrieve the Kubernetes cluster client from outside of the cluster
-func GetKubernetesClient() kubernetes.Interface {
-	// construct the path to resolve to `~/.kube/config`
-	kubeConfigPath := os.Getenv("HOME") + "/.kube/config"
+func GetKubernetesClient(config Config) kubernetes.Interface {
+	kubeConfigPath := os.Getenv(config.KubeConfigPathEnvironmentVariable)
 
-	// create the config from the path
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	k8sConfig, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
-		log.Fatalf("getClusterConfig: %#v", err)
+		log.Fatalf("GetKubernetesClient: %v", err)
 	}
 
-	// generate the client based off of the config
-	client, err := kubernetes.NewForConfig(config)
+	client, err := kubernetes.NewForConfig(k8sConfig)
 	if err != nil {
-		log.Fatalf("getClusterConfig: %#v", err)
+		log.Fatalf("GetKubernetesClient: %#v", err)
 	}
 
 	log.Info("Successfully constructed k8s client")
 	return client
 }
 
+type Config struct {
+	KongHostEnvironmentVariable       string
+	KubeConfigPathEnvironmentVariable string
+}
+
+/// Pulling from environment variables for now. TODO: Use Consul to home the configuration values (optionally)
+func NewConfig() Config {
+	return Config{
+		KongHostEnvironmentVariable:       "KONG_HOST",
+		KubeConfigPathEnvironmentVariable: "KUBE_CONFIG_FILE",
+	}
+}
+
 func main() {
+	config := NewConfig()
 
 	// get the Kubernetes client for connectivity
-	client := GetKubernetesClient()
+	client := GetKubernetesClient(config)
 
 	// create the informer so that we can not only list resources
 	// but also watch them for all Ingress resources in the default namespace
@@ -104,14 +113,12 @@ func main() {
 		},
 	})
 
-	// construct the Controller object which has all of the necessary components to
-	// handle logging, connections, informing (listing and watching), the queue,
-	// and the handler
-
 	httpClient := buildHttpClient()
-	kongClient, err := buildKongClient(httpClient)
+	kongClient, err := buildKongClient(httpClient, config)
 	if err != nil {
-		fmt.Println(fmt.Errorf("SOMETHING WENT HORRIBLY HORRIBLY WRONG. Unable to create a go-kong.Client: %#v", err))
+		//fmt.Fprintf(os.Stderr, "Unable to create a Kong Client (Ensure that the %s environment variable is set!): %#v\n", config.KongHostEnvironmentVariable, err)
+		//os.Exit(1)
+		log.Fatalf("Unable to create a Kong Client (Ensure that the %s environment variable is set!): %#v\n", config.KongHostEnvironmentVariable, err)
 	}
 
 	eventingK8s := eventing.K8s{Translator: &k8s.Translation{}}
@@ -153,8 +160,8 @@ func main() {
 	<-sigTerm
 }
 
-func buildKongClient(client *http.Client) (*gokong.Client, error) {
-	host := "http://localhost:8001" /// TODO: Pull this from somewhere meaningful...
+func buildKongClient(client *http.Client, config Config) (*gokong.Client, error) {
+	host := os.Getenv(config.KongHostEnvironmentVariable)
 	return gokong.NewClient(&host, client)
 }
 
