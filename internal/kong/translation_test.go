@@ -1,7 +1,7 @@
 package kong
 
 import (
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
+	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/k8s"
 	"reflect"
 	"testing"
 )

@@ -1,10 +1,9 @@
-module github.com/ciroque/k8s-kong-federated-ingress
+module github.marchex.com/marchex/k8s-kong-federated-ingress
 
 go 1.12
 
 require (
 	github.com/Sirupsen/logrus v1.0.6
-	github.com/ciroque/kongo v0.0.0-20190905214834-2e0851b8b2c5
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/hbagdi/go-kong v0.9.0
 	github.com/sirupsen/logrus v1.4.2 // indirect

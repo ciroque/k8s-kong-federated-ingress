@@ -3,8 +3,8 @@ package eventing
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/k8s"
-	"github.com/ciroque/k8s-kong-federated-ingress/internal/kong"
+	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/k8s"
+	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/kong"
 	networking "k8s.io/api/networking/v1beta1"
 )
 

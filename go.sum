@@ -6,14 +6,6 @@ github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdko
 github.com/Sirupsen/logrus v1.0.6 h1:HCAGQRk48dRVPA5Y+Yh0qdCSTzPOyU1tBJ7Q9YzotII=
 github.com/Sirupsen/logrus v1.0.6/go.mod h1:rmk17hk6i8ZSAJkSDa7nOxamrG+SP4P0mm+DAvExv4U=
 github.com/blang/semver v0.0.0-20190414102917-ba2c2ddd8906/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
-github.com/ciroque/kongo v0.0.0-20190829212754-a597fdd5be40 h1:XoLGAa29AJOotajoABA1VQ6LLgNKT1j2/fT/5OpZhpQ=
-github.com/ciroque/kongo v0.0.0-20190829212754-a597fdd5be40/go.mod h1:aaPpLCqWURH1PiR8Jx83HOxHgjTL+82lTmRHdefkk1M=
-github.com/ciroque/kongo v0.0.0-20190904193303-53d30b98be0d h1:cQbQbKVPMTCi/v6QrVQRDUjw7+A/gDObEeZp5suwmiE=
-github.com/ciroque/kongo v0.0.0-20190904193303-53d30b98be0d/go.mod h1:aaPpLCqWURH1PiR8Jx83HOxHgjTL+82lTmRHdefkk1M=
-github.com/ciroque/kongo v0.0.0-20190904213606-ecb0efa12800 h1:eKMmt+Wnm7EMO5kiIj2ZfNgg7ywcJqyuh1etuT2FcTI=
-github.com/ciroque/kongo v0.0.0-20190904213606-ecb0efa12800/go.mod h1:aaPpLCqWURH1PiR8Jx83HOxHgjTL+82lTmRHdefkk1M=
-github.com/ciroque/kongo v0.0.0-20190905214834-2e0851b8b2c5 h1:trkq0AFdwF5o4WMHtyeN8rgv4RmNKp4ST92YbBDeyJ4=
-github.com/ciroque/kongo v0.0.0-20190905214834-2e0851b8b2c5/go.mod h1:aaPpLCqWURH1PiR8Jx83HOxHgjTL+82lTmRHdefkk1M=
 github.com/davecgh/go-spew v0.0.0-20151105211317-5215b55f46b2/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
