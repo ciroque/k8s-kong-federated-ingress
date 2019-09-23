@@ -17,10 +17,12 @@ node {
             sh 'git branch --set-upstream-to=origin/master master'
         }
         stage('Test') {
-//             sh "${go} test ./..."
+            sh "${go} clean -testcache"
+            sh "${go} test ./..."
         }
         stage('Compile') {
             sh "mkdir -p bin"
+            sh "${go} clean"
             sh "${go} build -o bin/ ./cmd/k8s-kong-federated-ingress/"
         }
         stage('Build and Publish Docker Image') {
