@@ -20,6 +20,7 @@ node {
 //             sh "${go} test ./..."
         }
         stage('Compile') {
+            sh "mkdir bin"
             sh "${go} build -o bin/ ./cmd/k8s-kong-federated-ingress/"
         }
         stage('Build and Publish Docker Image') {
