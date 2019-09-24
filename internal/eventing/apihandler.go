@@ -5,7 +5,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/k8s"
 	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/kong"
-	"gopkg.in/d4l3k/messagediff.v1"
 	networking "k8s.io/api/networking/v1beta1"
 )
 
@@ -100,20 +99,11 @@ func (apiHandler *ApiHandler) ObjectUpdated(originalResource, revisedResource in
 	var gerr error
 
 	for revisedServiceName, revisedServiceDef := range revisedServiceMap {
-		if originalServiceDef, found := originalServiceMap[revisedServiceName]; found {
-
-			/// Let's to the simple thing for now and see what happens...
+		if _, found := originalServiceMap[revisedServiceName]; found {
 			if kongService, err := apiHandler.Kong.Translator.ServiceToKong(revisedServiceName, revisedServiceDef); err == nil {
 				if apiHandler.Kong.Registrar.Register(kongService) != nil {
 					gerr = fmt.Errorf("ApiHandler::ObjectUpdated failed to Register a service: %#v. Error: %#v. Previous errors: %v", kongService, err, gerr)
 				}
-			}
-
-			/// Or we can do some fine Delta Detection...
-			if delta, equal := messagediff.DeepDiff(originalServiceDef, revisedServiceDef); equal != true {
-				fmt.Println(fmt.Sprintf("------=====>> service name: '%s': Added: %d, Removed: %d, Modified: %d", revisedServiceName, len(delta.Added), len(delta.Removed), len(delta.Modified)))
-			} else {
-				fmt.Println(fmt.Sprintf("------=====>> No changes found for service: '%s'", revisedServiceName))
 			}
 		}
 	}
