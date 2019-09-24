@@ -8,6 +8,7 @@ require (
 	github.com/hbagdi/go-kong v0.9.0
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	gopkg.in/airbrake/gobrake.v2 v2.0.9 // indirect
+	gopkg.in/d4l3k/messagediff.v1 v1.2.1
 	gopkg.in/gemnasium/logrus-airbrake-hook.v2 v2.1.2 // indirect
 	k8s.io/api v0.0.0-20190820101039-d651a1528133
 	k8s.io/apimachinery v0.0.0-20190820100750-21ddcbbef9e1

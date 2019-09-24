@@ -5,6 +5,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/k8s"
 	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/kong"
+	"gopkg.in/d4l3k/messagediff.v1"
 	networking "k8s.io/api/networking/v1beta1"
 )
 
@@ -81,21 +82,41 @@ func (apiHandler *ApiHandler) ObjectDeleted(obj interface{}) error {
 	return nil
 }
 
-func (apiHandler *ApiHandler) ObjectUpdated(objOld, objNew interface{}) error {
+func (apiHandler *ApiHandler) ObjectUpdated(originalResource, revisedResource interface{}) error {
 	log.Info("ApiHandler.ObjectUpdated")
-	oldIngress := objOld.(*networking.Ingress)
-	newIngress := objNew.(*networking.Ingress)
+	previousIngress := originalResource.(*networking.Ingress)
+	revisedIngress := revisedResource.(*networking.Ingress)
 
-	_, err := apiHandler.K8s.Translator.IngressToService(oldIngress)
+	originalServiceMap, err := apiHandler.K8s.Translator.IngressToService(previousIngress)
 	if err != nil {
-		return fmt.Errorf("ObjectUpdated error translating oldIngress(%#v): %#v", oldIngress, err)
+		return fmt.Errorf("ObjectUpdated error translating previousIngress(%#v): %#v", previousIngress, err)
 	}
 
-	_, err = apiHandler.K8s.Translator.IngressToService(newIngress)
+	revisedServiceMap, err := apiHandler.K8s.Translator.IngressToService(revisedIngress)
 	if err != nil {
-		return fmt.Errorf("ObjectUpdated error translating newIngress(%#v): %#v", newIngress, err)
+		return fmt.Errorf("ObjectUpdated error translating revisedIngress(%#v): %#v", revisedIngress, err)
 	}
 
-	//return apiHandler.Registrar.Modify(oldService, newService)
-	return nil
+	var gerr error
+
+	for revisedServiceName, revisedServiceDef := range revisedServiceMap {
+		if originalServiceDef, found := originalServiceMap[revisedServiceName]; found {
+
+			/// Let's to the simple thing for now and see what happens...
+			if kongService, err := apiHandler.Kong.Translator.ServiceToKong(revisedServiceName, revisedServiceDef); err == nil {
+				if apiHandler.Kong.Registrar.Register(kongService) != nil {
+					gerr = fmt.Errorf("ApiHandler::ObjectUpdated failed to Register a service: %#v. Error: %#v. Previous errors: %v", kongService, err, gerr)
+				}
+			}
+
+			/// Or we can do some fine Delta Detection...
+			if delta, equal := messagediff.DeepDiff(originalServiceDef, revisedServiceDef); equal != true {
+				fmt.Println(fmt.Sprintf("------=====>> service name: '%s': Added: %d, Removed: %d, Modified: %d", revisedServiceName, len(delta.Added), len(delta.Removed), len(delta.Modified)))
+			} else {
+				fmt.Println(fmt.Sprintf("------=====>> No changes found for service: '%s'", revisedServiceName))
+			}
+		}
+	}
+
+	return gerr
 }
