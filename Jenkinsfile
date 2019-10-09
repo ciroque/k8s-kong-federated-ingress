@@ -11,6 +11,10 @@ node {
     def version = env.BUILD_ID
     def toolsNexus = "toolsnexus.marchex.com"
 
+    environment {
+        CGO_ENABLED = 0
+    }
+
     timestamps {
         stage('Checkout') {
             checkout scm
