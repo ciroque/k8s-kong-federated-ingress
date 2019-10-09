@@ -23,6 +23,11 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          env:
+            - name: KONG_HOST
+              value: "{{ .Values.environment.kongHost }}"
+            - name: KUBE_CONFIG_FILE
+              value: "{{ .Values.environment.kubeConfigFile }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

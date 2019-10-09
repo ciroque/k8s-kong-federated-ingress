@@ -23,7 +23,7 @@ node {
         stage('Compile') {
             sh "mkdir -p bin"
             sh "${go} clean"
-            sh "${go} build -o bin/ ./cmd/k8s-kong-federated-ingress/"
+            sh "CGO_ENABLED=0 ${go} build -o bin/ ./cmd/k8s-kong-federated-ingress/"
         }
         stage('Build and Publish Docker Image') {
             def image

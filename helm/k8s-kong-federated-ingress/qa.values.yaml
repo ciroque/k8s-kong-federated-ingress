@@ -9,6 +9,10 @@ image:
   tag: "latest"
   pullPolicy: IfNotPresent
 
+environment:
+  kongHost: "http://localhost:8001"
+  kubeConfigFile: "~/.kube/federated-ingress.config"
+
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
