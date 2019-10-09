@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "k8s-federated-ingress.fullname" . }}
+  name: {{ include "k8s-kong-federated-ingress.fullname" . }}
   labels:
-{{ include "k8s-federated-ingress.labels" . | indent 4 }}
+{{ include "k8s-kong-federated-ingress.labels" . | indent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,5 +12,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "k8s-federated-ingress.name" . }}
+    app.kubernetes.io/name: {{ include "k8s-kong-federated-ingress.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

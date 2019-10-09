@@ -1,3 +1,6 @@
+#
+# Defines the Role Based Access Control resources that are needed by the Controller in order to access the Ingress resources
+#
 apiVersion: v1
 kind: ServiceAccount
 metadata:
