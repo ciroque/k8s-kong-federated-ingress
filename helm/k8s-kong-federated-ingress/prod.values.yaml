@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: stable
+  repository: "toolsnexus.marchex.com:5001/kong-federated-ingress"
+  tag: "latest"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
