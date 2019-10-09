@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: "toolsnexus.marchex.com:5001/kong-federated-ingress"
+  repository: "toolsnexus.marchex.com:5001/k8s-kong-federated-ingress"
   tag: "latest"
   pullPolicy: IfNotPresent
 
