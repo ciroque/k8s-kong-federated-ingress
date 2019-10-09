@@ -7,7 +7,7 @@ properties([
 node {
     def goHome = "${tool 'Go 1.13'}"
     def go = "${goHome}/bin/go"
-    def dockerImageName = "kong-federated-ingress"
+    def dockerImageName = "k8s-kong-federated-ingress"
     def version = env.BUILD_ID
     def toolsNexus = "toolsnexus.marchex.com"
 
