@@ -11,7 +11,7 @@ image:
 
 environment:
   kongHost: "http://localhost:8001"
-  kubeConfigFile: "~/.kube/federated-ingress.config"
+  kubeConfigFile: "/opt/k8s-kong-federated-ingress/kubernetes-api.config"
 
 imagePullSecrets: []
 nameOverride: ""

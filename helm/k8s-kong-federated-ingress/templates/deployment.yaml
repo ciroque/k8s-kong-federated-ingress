@@ -43,6 +43,14 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /opt/k8s-kong-federated-ingress/
+              name: config-volume
+      volumes:
+        - name: config-volume
+          hostPath:
+            path: "/home/swagner/.kube"
+            type: Directory
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

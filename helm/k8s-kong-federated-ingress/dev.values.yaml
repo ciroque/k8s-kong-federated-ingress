@@ -6,12 +6,12 @@ replicaCount: 1
 
 image:
   repository: "toolsnexus.marchex.com:5001/k8s-kong-federated-ingress"
-  tag: "latest"
+  tag: latest
   pullPolicy: IfNotPresent
 
 environment:
-  kongHost: "http://localhost:8001"
-  kubeConfigFile: "~/.kube/federated-ingress.config"
+  kongHost: "http://10.104.11.99:8001"
+  kubeConfigFile: "/opt/k8s-kong-federated-ingress/kubernetes-api.config"
 
 imagePullSecrets: []
 nameOverride: ""
