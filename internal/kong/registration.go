@@ -171,13 +171,45 @@ func buildTarget(upstream gokong.Upstream, targetAddress string) (gokong.Target,
 	return target, nil
 }
 
+func buildHealthCheck(serviceDef ServiceDef) (gokong.Healthcheck, error) {
+	activeCheck := gokong.ActiveHealthcheck{
+		Concurrency: nil,
+		Healthy: &gokong.Healthy{
+			HTTPStatuses: nil,
+			Interval:     gokong.Int(5),
+			Successes:    gokong.Int(1),
+		},
+		HTTPPath:               gokong.String("/health/ping"),
+		HTTPSSni:               nil,
+		HTTPSVerifyCertificate: nil,
+		Type:                   nil,
+		Timeout:                gokong.Int(2),
+		Unhealthy: &gokong.Unhealthy{
+			HTTPFailures: gokong.Int(3),
+			HTTPStatuses: nil,
+			TCPFailures:  gokong.Int(3),
+			Timeouts:     gokong.Int(3),
+			Interval:     gokong.Int(30),
+		},
+	}
+
+	healthCheck := gokong.Healthcheck{
+		Active:  &activeCheck,
+		Passive: nil,
+	}
+
+	return healthCheck, nil
+}
+
 func buildUpstream(serviceDef ServiceDef) (gokong.Upstream, error) {
+	healthCheck, _ := buildHealthCheck(serviceDef)
+
 	upstream := gokong.Upstream{
 		ID:                 nil,
 		Name:               &serviceDef.UpstreamName,
 		Algorithm:          nil,
 		Slots:              nil,
-		Healthchecks:       nil,
+		Healthchecks:       &healthCheck,
 		CreatedAt:          nil,
 		HashOn:             nil,
 		HashFallback:       nil,

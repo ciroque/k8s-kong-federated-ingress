@@ -2,6 +2,7 @@ package kong
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	gokong "github.com/hbagdi/go-kong/kong"
@@ -368,8 +369,11 @@ func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 
 	registration, _ := NewRegistration(Client(mockClient))
 	serviceDef := buildExampleServiceDef()
+	defaultHealthCheck := buildDefaultHealthCheck()
+
 	expectedUpstream := gokong.Upstream{
-		Name: &serviceDef.UpstreamName,
+		Name:         &serviceDef.UpstreamName,
+		Healthchecks: &defaultHealthCheck,
 	}
 
 	err := registration.Register(serviceDef)
@@ -378,7 +382,9 @@ func TestRegistration_Register_CreateUpstreamCalled(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expectedUpstream, *upstreams.Created) {
-		t.Fatal(fmt.Sprintf("Expected TestUpstreams.Create to be called with:\n\t%#v, \nbut got\n\t%#v", expectedUpstream, *upstreams.Created))
+		actual, _ := json.Marshal(upstreams.Created)
+		expected, _ := json.Marshal(expectedUpstream)
+		t.Fatal(fmt.Sprintf("Expected TestUpstreams.Create to be called with:\n\t%s, \nbut got\n\t%s", expected, actual))
 	}
 }
 
@@ -486,4 +492,25 @@ func buildExampleServiceDef() ServiceDef {
 		},
 	}
 	return serviceDef
+}
+
+func buildDefaultHealthCheck() gokong.Healthcheck {
+
+	return gokong.Healthcheck{
+		Active: &gokong.ActiveHealthcheck{
+			Healthy: &gokong.Healthy{
+				Interval:  gokong.Int(5),
+				Successes: gokong.Int(1),
+			},
+			HTTPPath: gokong.String("/health/ping"),
+			Timeout:  gokong.Int(2),
+			Unhealthy: &gokong.Unhealthy{
+				HTTPFailures: gokong.Int(3),
+				TCPFailures:  gokong.Int(3),
+				Timeouts:     gokong.Int(3),
+				Interval:     gokong.Int(30),
+			},
+		},
+	}
+
 }
