@@ -19,6 +19,6 @@ kubectl get -n $NAMESPACE secret $(kubectl get -n $NAMESPACE serviceaccounts $SE
 mv /tmp/ca.crt /var/run/secrets/kubernetes.io/serviceaccount/
 cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
-kubectl get -n $NAMESPACE secret $(kubectl get -n $NAMESPACE serviceaccounts $SERVICE_ACCOUNT_NAME -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data.token' | sed 's/"//g' > /tmp/token
+kubectl get -n $NAMESPACE secret $(kubectl get -n $NAMESPACE serviceaccounts $SERVICE_ACCOUNT_NAME -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data.token' | sed 's/"//g' | base64 -d > /tmp/token
 mv /tmp/token /var/run/secrets/kubernetes.io/serviceaccount/
 cat /var/run/secrets/kubernetes.io/serviceaccount/token

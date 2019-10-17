@@ -4,33 +4,34 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: ns-kkfi
+  name: "k8s-kkfi"
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: sa-kkfi
-  namespace: ns-kkfi
+  name: k8s-kong-federated-ingress-controller
+  namespace: "k8s-kkfi"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cr-ingress-get-list-watch
+  name: kkfi-get-list-watch-ingresses
+  namespace: "k8s-kkfi"
 rules:
-  - apiGroups: ["extensions/v1beta1"]
+  - apiGroups: ["extensions", "networking.k8s.io"]
     resources: ["ingresses"]
     verbs: ["get", "watch", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: "kkfi:cr-ingress-get-list-watch"
-  namespace: ns-kkfi
+  name: k8s-kong-federated-ingress-controller:kkfi-get-list-watch-ingresses
+  namespace: "k8s-kkfi"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cr-ingress-get-list-watch
+  name: kkfi-get-list-watch-ingresses
 subjects:
   - kind: ServiceAccount
-    name: sa-kkfi
-    namespace: ns-kkfi
+    name: k8s-kong-federated-ingress-controller
+    namespace: "k8s-kkfi"
