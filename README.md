@@ -20,7 +20,7 @@ This project is based on the article and sample code from:
     1. KUBERNETES_SERVICE_HOST: The host for the k8s API
         (for local dev environments this is obtained using `minikube ip`, or finding the cluster's ip in the Rancher console)
     1. KUBERNETES_SERVICE_PORT: The port for the k8s API
-        (this is most often ***8443***)
+        (this is most often ***6443***)
     1. KONG_HOST: The Kong host that is the target for Ingress synchronization
         (For local dev environments this is most often ***http://localhost:8001***)
 1. Ensure the Service Account's token and ca.crt are available at the following locations:
