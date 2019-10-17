@@ -5,6 +5,9 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+NAMESPACE=k8s-kkfi
+SERVICE_ACCOUNT_NAME=k8s-kong-federated-ingress-controller
+
 ### CLEAN UP COMMANDS
 ## kubectl apply -f /site/k8s-kong-federated-ingress/helm/k8s-kong-federated-ingress/templates/rbac-config.yaml
 ## kubectl delete -f /site/k8s-kong-federated-ingress/helm/k8s-kong-federated-ingress/templates/rbac-config.yaml
@@ -12,10 +15,10 @@ fi
 
 mkdir -p /var/run/secrets/kubernetes.io/serviceaccount/
 
-kubectl get -n ns-kkfi secret $(kubectl get -n ns-kkfi serviceaccounts sa-kkfi -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data["ca.crt"]' | sed 's/"//g' | base64 -d > /tmp/ca.crt
+kubectl get -n $NAMESPACE secret $(kubectl get -n $NAMESPACE serviceaccounts $SERVICE_ACCOUNT_NAME -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data["ca.crt"]' | sed 's/"//g' | base64 -d > /tmp/ca.crt
 mv /tmp/ca.crt /var/run/secrets/kubernetes.io/serviceaccount/
 cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 
-kubectl get -n ns-kkfi secret $(kubectl get -n ns-kkfi serviceaccounts sa-kkfi -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data.token' | sed 's/"//g' > /tmp/token
+kubectl get -n $NAMESPACE secret $(kubectl get -n $NAMESPACE serviceaccounts $SERVICE_ACCOUNT_NAME -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data.token' | sed 's/"//g' > /tmp/token
 mv /tmp/token /var/run/secrets/kubernetes.io/serviceaccount/
 cat /var/run/secrets/kubernetes.io/serviceaccount/token
