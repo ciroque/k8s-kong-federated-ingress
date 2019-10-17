@@ -2,37 +2,36 @@
 # Defines the Role Based Access Control resources that are needed by the Controller in order to access the Ingress resources
 #
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: "k8s-kkfi"
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: k8s-kong-federated-ingress
+  name: k8s-kong-federated-ingress-controller
+  namespace: "k8s-kkfi"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: ingress-resource-get-watch-list
+  name: kkfi-get-list-watch-ingresses
+  namespace: "k8s-kkfi"
 rules:
-  - apiGroups: [""]
+  - apiGroups: ["extensions", "networking.k8s.io"]
     resources: ["ingresses"]
     verbs: ["get", "watch", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: "k8s-kong-federated-ingress:ingress-resource-get-watch-list"
+  name: k8s-kong-federated-ingress-controller:kkfi-get-list-watch-ingresses
+  namespace: "k8s-kkfi"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kkfi-get-list-watch-ingresses
 subjects:
   - kind: ServiceAccount
-    name: k8s-kong-federated-ingress
-    namespace: default
-roleRef:
-  kind: ClusterRole
-  name: ingress-resource-get-watch-list
-  apiGroup: rbac.authorization.k8s.io
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: k8s-kong-federated-ingress-secret
-  annotations:
-    kubernetes.io/service-account.name: k8s-kong-federated-ingress
-type: kubernetes.io/service-account-token
-
+    name: k8s-kong-federated-ingress-controller
+    namespace: "k8s-kkfi"

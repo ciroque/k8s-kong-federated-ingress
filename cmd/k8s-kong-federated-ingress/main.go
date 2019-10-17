@@ -18,6 +18,7 @@ import (
 	"github.marchex.com/marchex/k8s-kong-federated-ingress/internal/kong"
 	networking "k8s.io/api/networking/v1beta1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"os"
 	"os/signal"
@@ -28,12 +29,11 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/workqueue"
 )
 
 func GetKubernetesClient(config *Config) kubernetes.Interface {
-	k8sConfig, err := clientcmd.BuildConfigFromFlags("", config.KubeConfigPath)
+	k8sConfig, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatalf("GetKubernetesClient: %v", err)
 	}
@@ -48,22 +48,15 @@ func GetKubernetesClient(config *Config) kubernetes.Interface {
 }
 
 type Config struct {
-	KubeConfigPath string
 	KongHost       string
 }
 
-/// Pulling from environment variables for now. TODO: Use Consul to home the configuration values (optionally)
 func NewConfig() (*Config, error) {
 	config := new(Config)
 
 	config.KongHost = os.Getenv("KONG_HOST")
 	if config.KongHost == "" {
 		return nil, errors.New("the KONG_HOST variable is not defined. This is required")
-	}
-
-	config.KubeConfigPath = os.Getenv("KUBE_CONFIG_FILE")
-	if config.KubeConfigPath == "" {
-		return nil, errors.New("the KUBE_CONFIG_FILE variable is not defined. This is required")
 	}
 
 	return config, nil
