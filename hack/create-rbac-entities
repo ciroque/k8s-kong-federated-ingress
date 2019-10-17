@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+
+### CLEAN UP COMMANDS
+## kubectl apply -f /site/k8s-kong-federated-ingress/helm/k8s-kong-federated-ingress/templates/rbac-config.yaml
+## kubectl delete -f /site/k8s-kong-federated-ingress/helm/k8s-kong-federated-ingress/templates/rbac-config.yaml
+## rm /kubectl delete -f /site/k8s-kong-federated-ingress/helm/k8s-kong-federated-ingress/templates/rbac-config.yamlvar/run/secrets/kubernetes.io/serviceaccount/*
+
+mkdir -p /var/run/secrets/kubernetes.io/serviceaccount/
+
+kubectl get -n ns-kkfi secret $(kubectl get -n ns-kkfi serviceaccounts sa-kkfi -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data["ca.crt"]' | sed 's/"//g' | base64 -d > /tmp/ca.crt
+mv /tmp/ca.crt /var/run/secrets/kubernetes.io/serviceaccount/
+cat /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+
+kubectl get -n ns-kkfi secret $(kubectl get -n ns-kkfi serviceaccounts sa-kkfi -o json | jq '.secrets[0].name' | sed 's/"//g') -o json | jq '.data.token' | sed 's/"//g' > /tmp/token
+mv /tmp/token /var/run/secrets/kubernetes.io/serviceaccount/
+cat /var/run/secrets/kubernetes.io/serviceaccount/token
